@@ -4,9 +4,9 @@ A Cyberpunk 2077 mod that aims to improve civilian vehicle security
 ## Getting Started
 
 ### Requirements
- - Cyberpunk 2077 Version 1.52
- - Cyber Engine Tweaks
- - Redscript
+ - Cyberpunk 2077 (Latest PC Version)
+ - [Cyber Engine Tweaks](https://www.nexusmods.com/cyberpunk2077/mods/107)
+ - [Redscript](https://www.nexusmods.com/cyberpunk2077/mods/1511)
  - Custom Hacking System
 
 ### Installing the mod
@@ -21,13 +21,17 @@ Certain vehicles (especially richer ones) do have a stronger security system : I
 
 The mod also adds quickhacks for vehicles :
  - Unlock Vehicle
- 	Similar to the Remote Breach quickhack, this will open the hacking minigame panel. There is however a usage cooldown
+ 
+    > Similar to the Remote Breach quickhack, this will open the hacking minigame panel. There is however a usage cooldown
  - Distract
- 	Distracts nearby enemies for a short time
+ 
+    > Distracts nearby enemies for a short time
  - Force Brakes
- 	Forces Brakes for 10 Seconds
+ 
+ 	  > Forces Brakes for 10 Seconds
  - Explode
- 	Blows up the Vehicle. You won't get chased by the police if you blow up a vehicle with a civilian inside
+ 
+ 	  > Blows up the Vehicle. You won't get chased by the police if you blow up a vehicle with a civilian inside
 
 Vehicles owned by the player are unlocked by default and cannot get quickhacked
 
