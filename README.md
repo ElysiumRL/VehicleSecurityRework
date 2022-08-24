@@ -7,7 +7,7 @@ A Cyberpunk 2077 mod that aims to improve civilian vehicle security
  - Cyberpunk 2077 (Latest PC Version)
  - [Cyber Engine Tweaks](https://www.nexusmods.com/cyberpunk2077/mods/107)
  - [Redscript](https://www.nexusmods.com/cyberpunk2077/mods/1511)
- - Custom Hacking System
+ - [Custom Hacking System](https://github.com/ElysiumRL/CustomHackingSystem)
 
 ### Installing the mod
  1. Make sure all the Requirements above are installed
