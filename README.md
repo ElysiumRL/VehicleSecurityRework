@@ -37,7 +37,3 @@ Vehicles owned by the player are unlocked by default and cannot get quickhacked
 
 ## Contributing
 Found a Bug ? Have any ideas ? Want to contribute ? You can make a pull request here or contact me on Discord about it
-
-## Known Issues
- - Quickhack remaining duration isn't displayed
- - Quest marked vehicles should get unlocked by default, however this hasn't been tested yet and cannot be confirmed for sure
