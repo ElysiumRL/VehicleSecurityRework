@@ -283,17 +283,36 @@ public final func UnlockHackedVehicle() -> Void
 	this.SetIsStolen(true);
 }
 
-//WIP: didn't test this out so might not work
+@addMethod(VehicleComponentPS)
+public final func UnlockHackedVehicleNoSave() -> Void
+{
+	this.m_isVehicleHacked = true;
+}
+
 //we probably don't want to hack quest marked vehicles (but still get quickhacks for them)
 @wrapMethod(VehicleComponentPS)
 public func SetIsMarkedAsQuest(isQuest: Bool) -> Void
 {
-	wrappedMethod(isQuest);
 	if isQuest
 	{
 		this.UnlockHackedVehicle();
 	}
+	wrappedMethod(isQuest);
 }
+
+//Fixes an issue where quest-marked vehicles wouldn't be unlocked
+//Might still not work on some vehicles,but who knows...
+@wrapMethod(VehicleComponentPS)
+public final func SetHasStateBeenModifiedByQuest(set: Bool) -> Void 
+{
+	if set
+	{
+		this.UnlockHackedVehicle();
+	}
+	wrappedMethod(set);
+}
+
+
 
 //Get all quickhacks for the vehicle
 @replaceMethod(VehicleComponentPS)
