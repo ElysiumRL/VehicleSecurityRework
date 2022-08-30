@@ -8,6 +8,8 @@ A Cyberpunk 2077 mod that aims to improve civilian vehicle security
  - [Cyber Engine Tweaks](https://www.nexusmods.com/cyberpunk2077/mods/107)
  - [Redscript](https://www.nexusmods.com/cyberpunk2077/mods/1511)
  - [ArchiveXL](https://www.nexusmods.com/cyberpunk2077/mods/4198)
+ - [TweakXL](https://www.nexusmods.com/cyberpunk2077/mods/4197)
+ - [RED4ext](https://www.nexusmods.com/cyberpunk2077/mods/2380)
  - [Custom Hacking System](https://github.com/ElysiumRL/CustomHackingSystem)
 
 ### Installing the mod
