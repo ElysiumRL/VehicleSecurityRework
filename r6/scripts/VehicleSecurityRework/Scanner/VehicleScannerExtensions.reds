@@ -30,6 +30,9 @@ module VehicleSecurityRework.Scanner
 		  this.AsyncSpawnScannerModule(n"ScannerAbilitiesWidget");
 		  this.AsyncSpawnScannerModule(n"ScannerResistancesWidget");
 		  this.AsyncSpawnScannerModule(n"ScannerDeviceDescriptionWidget");
+		  //Compatibility for Kiroshi Opticals - Crowd Scanner & Lifepath Bonuses and Gang-Corpo Traits
+		  this.AsyncSpawnScannerModule(n"ScannerVehicleBody");
+
 		  break;
 		case ScannerObjectType.DEVICE:
 		  this.GetRootWidget().SetVisible(true);
@@ -49,7 +52,6 @@ module VehicleSecurityRework.Scanner
 		  //Added this
 		  //Displays the vulnerability chunks
 		  this.AsyncSpawnScannerModule(n"ScannerVulnerabilitiesWidget");
-		  ////
 
 		  break;
 		case ScannerObjectType.GENERIC:

@@ -49,6 +49,25 @@ public class UnlockVehicleProgramAction extends HackProgramAction
 		//And then we queue the "event" to the prevention system
 		preventionSystem.QueueRequest(crimeWitness);
 		
+		let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.gameInstance);
+		let params:ref<VehicleSecurityRework> = container.Get(n"VehicleSecurityRework.Base.VehicleSecurityRework") as VehicleSecurityRework;
+
+		if params.vehicleCombatCompatibility
+		{
+			let preventionRequest:ref<PreventionDelayedSpawnRequest> = new PreventionDelayedSpawnRequest();
+			preventionRequest.heatStage = EPreventionHeatStage.Heat_1;
+			preventionSystem.QueueRequest(preventionRequest);
+
+			//let i:Int32 = 0;
+			//while (i < 5)
+			//{
+			//	GameInstance.GetDelaySystem(this.gameInstance).QueueTask(this,null,n"PreventionSystem.CreateVCDamageRequest",gameScriptTaskExecutionStage.Any);
+			//	//PreventionSystem.CreateVCDamageRequest(this.gameInstance, GetPlayer(this.gameInstance), 1.75, "");
+			//	i+=1;
+			//}
+
+		}
+
 		//and poof you get the police triggered at you (the same as if you were killing a civilian)
 		
 		//+ an additional warning message (even if there is already the police message)

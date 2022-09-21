@@ -18,6 +18,18 @@ import HackingExtensions.Programs.*
 //Scriptable System used by the lua part of the mod to find if redscript files are installed (at least this one) or not
 public class VehicleSecurityRework extends ScriptableSystem
 {
+	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+	@runtimeProperty("ModSettings.category","General")
+	@runtimeProperty("ModSettings.displayName","Auto Unlock Security")
+	@runtimeProperty("ModSettings.description","Unlocks the security for ALL vehicles while also enabling Quickhacks (Requires Game Restart)")
+	public let forceSecurityUnlock:Bool = false;
+
+	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+	@runtimeProperty("ModSettings.category","Compatibility")
+	@runtimeProperty("ModSettings.displayName","Vehicle Combat Compatibility")
+	@runtimeProperty("ModSettings.description","Enables compatibility for Vehicle Combat by changing prvention spawns when failing hack")
+	public let vehicleCombatCompatibility:Bool = false;
+
 	private func OnAttach() -> Void
 	{
 		//LogChannel(n"DEBUG","[VehicleSecurityRework] Scriptable System Attached");
@@ -269,7 +281,8 @@ context: GetActionsContext, objectActionsCallbackController: wref<gameObjectActi
 out choices: array<InteractionChoice>, isAutoRefresh: Bool) -> Void 
 {
 	//TODO: remove it (?)
-	if (this.GetIsPlayerVehicle() || this.GetIsStolen())
+
+	if (this.GetIsPlayerVehicle() || this.GetIsStolen() || this.IsMarkedAsQuest())
 	{
 		this.UnlockHackedVehicle();
 	}
@@ -376,6 +389,7 @@ protected func GetQuickHackActions(out actions: array<ref<DeviceAction>>, contex
 protected func GameAttached() -> Void 
 {
 	wrappedMethod();
+
 	this.m_canHandleAdvancedInteraction = true;
 	this.m_forceResolveStateOnAttach = true;
 	this.m_exposeQuickHacks = true;
@@ -386,8 +400,11 @@ protected func GameAttached() -> Void
 	this.AddQuickHackVulnerability(t"DeviceAction.ExplodeVehicle");
 	this.AddQuickHackVulnerability(t"DeviceAction.MalfunctionClassHack");
 	this.AddQuickHackVulnerability(t"DeviceAction.ForceBrakes");
+	
+	let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
+	let params:ref<VehicleSecurityRework> = container.Get(n"VehicleSecurityRework.Base.VehicleSecurityRework") as VehicleSecurityRework;
 
-	if (this.GetIsPlayerVehicle() || this.GetIsStolen() || this.IsMarkedAsQuest())
+	if (this.GetIsPlayerVehicle() || this.GetIsStolen() || this.IsMarkedAsQuest() || params.forceSecurityUnlock)
 	{
 		this.UnlockHackedVehicle();
 	}
@@ -514,29 +531,33 @@ public final func DetermineActionsToPush(interaction: ref<InteractionComponent>,
 	}
 	context.requestType = gamedeviceRequestType.Direct;
 	this.GetOwnerEntity().GetRecord().ObjectActions(actionRecords);
+	
 	//this removes the interaction for demo & engineering  actions, but it just won't put the default mount action in game, wtf
 	//Needs a fix or a removal from the tweakdb but not tested yet
-	//let actionsToRemove:array<wref<ObjectAction_Record>>;
-	//while i < ArraySize(actionRecords) 
-	//{
-	//	let actionName :CName= actionRecords[i].ActionName();
-	//	switch actionName {
-    //        case n"VehicleHijack":
-	//		ArrayPush(actionsToRemove,actionRecords[i]);
-    //          break;
-    //        case n"VehicleCrackLock":
-	//		ArrayPush(actionsToRemove,actionRecords[i]);
-	//		break;
-    //      };
-	//	i+=1;
-	//}
-	//i=0;
-	//while i < ArraySize(actionsToRemove) 
-	//{
-	//	ArrayRemove(actionRecords,actionsToRemove[i]);
-	//	i+=1;
-	//}
-	//i=0;
+	let actionsToRemove:array<wref<ObjectAction_Record>>;
+	
+	while i < ArraySize(actionRecords) 
+	{
+		let actionName :CName= actionRecords[i].ActionName();
+		switch actionName {
+            case n"VehicleHijack":
+			//ArrayPush(actionsToRemove,actionRecords[i]);
+              break;
+            case n"VehicleCrackLock":
+			ArrayPush(actionsToRemove,actionRecords[i]);
+			break;
+          };
+		i+=1;
+	}
+	i = 0;
+	while i < ArraySize(actionsToRemove) 
+	{
+		ArrayRemove(actionRecords,actionsToRemove[i]);
+		i+=1;
+	}
+
+	i=0
+	;
 
 	this.GetValidChoices(actionRecords, this.ChangeToActionContext(context), objectActionsCallbackController, choices, isAutoRefresh);
 	this.FinalizeGetActions(actions);
@@ -552,6 +573,7 @@ public final func DetermineActionsToPush(interaction: ref<InteractionComponent>,
 			ChoiceTypeWrapper.SetType(actionToExtractChoices.interactionChoice.choiceMetaData.type, gameinteractionsChoiceType.Inactive);
 			//+ remove actions
 			actions[i].actionName = n"";
+			(actions[i] as ScriptableDeviceAction).SetInactive();
 			(actions[i] as ScriptableDeviceAction).SetIllegal(true);
 		}
 		ArrayPush(choices, actionToExtractChoices.GetInteractionChoice());

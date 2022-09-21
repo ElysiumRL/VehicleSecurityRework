@@ -464,16 +464,13 @@ private let m_slotComponent: ref<SlotComponent>;
 @addMethod(VehicleObject)
   protected cb func OnHUDInstruction(evt: ref<HUDInstruction>) -> Bool {
 	super.OnHUDInstruction(evt);
-	
 	if Equals(evt.highlightInstructions.GetState(), InstanceState.ON) {
 	  this.GetVehiclePS().SetFocusModeData(true);
 	  this.ResolveDeviceOperationOnFocusMode(gameVisionModeType.Focus, true);
 	} else {
 	  if evt.highlightInstructions.WasProcessed() {
 		this.GetVehiclePS().SetFocusModeData(false);
-		//this.ToggleAreaIndicator(false);
 		this.ResolveDeviceOperationOnFocusMode(gameVisionModeType.Default, false);
-		//this.NotifyConnectionHighlightSystem(false, false);
 	  };
 	};
 	if evt.quickhackInstruction.ShouldProcess() {
@@ -491,9 +488,12 @@ private final func ResolveDeviceOperationOnFocusMode(visionType: gameVisionModeT
 	} else {
 	  operationType = ETriggerOperationType.EXIT;
 	};
-	if this.GetVehiclePS().GetDeviceOperationsContainer() != null {
-	  this.GetVehiclePS().GetDeviceOperationsContainer().EvaluateFocusModeTriggers(this, operationType);
-	};
+	if (this.GetVehiclePS() != null)
+	{
+		if this.GetVehiclePS().GetDeviceOperationsContainer() != null {
+		  this.GetVehiclePS().GetDeviceOperationsContainer().EvaluateFocusModeTriggers(this, operationType);
+		};
+	}
   };
 }
 
@@ -727,19 +727,13 @@ public const func DeterminGameplayRoleMappinVisuaState(data: SDeviceMappinData) 
       };
       return EMappinVisualState.Unavailable;
     };
-    //if this.HasAnySkillCheckActive() && this.CanPassAnySkillCheck() {
-    //  return EMappinVisualState.Available;
-    //};
-    hasQuickHacksExposed = this.GetNetworkSystem().QuickHacksExposedByDefault() || this.IsConnectedToBackdoorDevice() && this.GetVehiclePS().IsQuickHacksExposed();
+	hasQuickHacksExposed = true;
     if hasQuickHacksExposed {
       hasAnyQuickHacksVoulnerabilities = this.GetVehiclePS().HasAnyActiveQuickHackVulnerabilities();
     };
     if hasQuickHacksExposed && hasAnyQuickHacksVoulnerabilities {
       return EMappinVisualState.Available;
     };
-    //if this.HasAnySkillCheckActive() && !this.CanPassAnySkillCheck() {
-    //  return EMappinVisualState.Unavailable;
-    //};
     if !this.HasAnySkillCheckActive() && !hasQuickHacksExposed {
       return EMappinVisualState.Unavailable;
     };
