@@ -48,7 +48,7 @@ module VehicleSecurityRework.Scanner
 		  this.AsyncSpawnScannerModule(n"ScannerDeviceDescriptionWidget");
 		  
 		  //NPCBody : Affiliation (wanted a fun thing but it doesn't fit the mod & it's broken because of tweak db sadge)
-		  //this.AsyncSpawnScannerModule(n"ScannerNPCBodyWidget");
+		  this.AsyncSpawnScannerModule(n"ScannerNPCBodyWidget");
 		  //Added this
 		  //Displays the vulnerability chunks
 		  this.AsyncSpawnScannerModule(n"ScannerVulnerabilitiesWidget");

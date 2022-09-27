@@ -1,5 +1,5 @@
+@if(ModuleExists("HackingExtensions"))
 import HackingExtensions.*
-
 
 public class UnlockSecurityDeviceAction extends CustomAccessBreach
 {
@@ -33,6 +33,15 @@ public class VehicleForceBrakesDeviceAction extends ActionBool
 	}
 }
 
+public class AutoHackVehicleDeviceAction extends ActionBool
+{
+	public final func SetProperties() -> Void
+	{
+		this.actionName = n"AutoHack";
+		this.prop = DeviceActionPropertyFunctions.SetUpProperty_Bool(this.actionName, true, this.actionName, this.actionName);
+	}
+}
+
 @addMethod(VehicleComponentPS)
 private final const func ActionUnlockSecurity(minigameDef:TweakDBID) -> ref<UnlockSecurityDeviceAction> 
 {
@@ -52,7 +61,7 @@ private final const func ActionUnlockSecurity(minigameDef:TweakDBID) -> ref<Unlo
 	return action;
 }
 
-//Not Working
+//Not Working (maybe ? I don't remember)
 @addMethod(VehicleComponentPS)
 private final const func ActionVehicleDistraction() -> ref<VehicleDistractionDeviceAction> 
 {
@@ -66,6 +75,25 @@ private final const func ActionVehicleDistraction() -> ref<VehicleDistractionDev
 
 	action.SetObjectActionID(t"DeviceAction.VehicleDistraction");
 	
+	let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
+	let customHackSystem: ref<CustomHackingSystem> = container.Get(n"HackingExtensions.CustomHackingSystem") as CustomHackingSystem;
+	customHackSystem.RegisterDeviceAction(action);
+	action.CreateInteraction();
+
+	return action;
+}
+
+@addMethod(VehicleComponentPS)
+private final const func ActionVehicleAutoHack() -> ref<AutoHackVehicleDeviceAction> 
+{
+	let action: ref<AutoHackVehicleDeviceAction> = new AutoHackVehicleDeviceAction();
+	action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
+	action.SetUp(this);
+	action.SetProperties();
+	action.AddDeviceName(this.m_deviceName);
+	action.SetObjectActionID(t"DeviceAction.AutoHack");
+	action.SetDurationValue(10.0);
+
 	let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
 	let customHackSystem: ref<CustomHackingSystem> = container.Get(n"HackingExtensions.CustomHackingSystem") as CustomHackingSystem;
 	customHackSystem.RegisterDeviceAction(action);
@@ -142,10 +170,12 @@ protected cb func OnActionVehicleDistraction(evt:ref<VehicleDistractionDeviceAct
       this.LogActionDetails(evt, cachedStatus);
     };
     return EntityNotificationType.SendThisEventToEntity;
-
 }
+
+
 @addMethod(VehicleObject)
-  protected final func Distract() -> Void {
+  protected final func Distract() -> Void 
+{
     let broadcaster: ref<StimBroadcasterComponent>;
 	broadcaster = this.GetStimBroadcasterComponent();
     if IsDefined(broadcaster) 
@@ -167,7 +197,7 @@ protected cb func OnActionVehicleDistraction(evt:ref<VehicleDistractionDeviceAct
 		let distractionLogic:ref<VehicleDistractionLogic> = new VehicleDistractionLogic();
 		GameInstance.GetDelaySystem(this.GetGame()).DelayEventNextFrame(this, distractionLogic);
     }
-  }
+}
 
 public class VehicleDistractionLogic extends Event
 {
@@ -233,6 +263,14 @@ protected cb func OnForceBrakesVehicle(evt:ref<VehicleForceBrakesDeviceAction>) 
 		let endEvt = this.ActionVehicleForceBrakes();
 		this.ExecutePSActionWithDelay(endEvt, this, evt.GetDurationValue());
 	}
+}
+
+@addMethod(VehicleComponentPS)
+protected cb func OnAutoHackVehicle(evt:ref<AutoHackVehicleDeviceAction>) -> EntityNotificationType 
+{
+	this.m_isVehicleHacked = true;	
+	this.SetIsStolen(true);	
+	this.UnlockAllVehDoors();
 }
 
 @addField(VehicleComponentPS)

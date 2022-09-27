@@ -11,7 +11,7 @@ public static func LookAtGameObject(gameInstance: GameInstance,opt useLineOfSigh
 public static func LookAtGameObject(gameInstance: GameInstance, maxDistance: Float,opt useLineOfSight:Bool,opt ignoreTransparency:Bool) -> ref<GameObject> 
 {
 	let player = GetPlayer(gameInstance);
-	let targetObject: ref<GameObject> = LookAtGameObject(gameInstance);
+	let targetObject: ref<GameObject> = LookAtGameObject(gameInstance,useLineOfSight,ignoreTransparency);
 
 	if(targetObject != null)
 	{

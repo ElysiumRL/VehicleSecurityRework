@@ -46,27 +46,22 @@ public class UnlockVehicleProgramAction extends HackProgramAction
 		//We fill the position (vector4) of the crime (so player position)
 		crimeWitness.criminalPosition = this.GetPlayer().GetWorldPosition();
 		
-		//And then we queue the "event" to the prevention system
-		preventionSystem.QueueRequest(crimeWitness);
-		
 		let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.gameInstance);
 		let params:ref<VehicleSecurityRework> = container.Get(n"VehicleSecurityRework.Base.VehicleSecurityRework") as VehicleSecurityRework;
-
-		if params.vehicleCombatCompatibility
+		
+		//And then we queue the "event" to the prevention system
+		if !params.vehicleCombatCompatibility
 		{
-			let preventionRequest:ref<PreventionDelayedSpawnRequest> = new PreventionDelayedSpawnRequest();
-			preventionRequest.heatStage = EPreventionHeatStage.Heat_1;
-			preventionSystem.QueueRequest(preventionRequest);
-
-			//let i:Int32 = 0;
-			//while (i < 5)
-			//{
-			//	GameInstance.GetDelaySystem(this.gameInstance).QueueTask(this,null,n"PreventionSystem.CreateVCDamageRequest",gameScriptTaskExecutionStage.Any);
-			//	//PreventionSystem.CreateVCDamageRequest(this.gameInstance, GetPlayer(this.gameInstance), 1.75, "");
-			//	i+=1;
-			//}
-
+			preventionSystem.QueueRequest(crimeWitness);
 		}
+		
+		//Removed because maybe not useful anymore ?
+		//if params.vehicleCombatCompatibility && !GetPlayer(this.gameInstance).IsInCombat()
+		//{
+		//	let preventionRequest:ref<PreventionDelayedSpawnRequest> = new PreventionDelayedSpawnRequest();
+		//	preventionRequest.heatStage = EPreventionHeatStage.Heat_1;
+		//	preventionSystem.QueueRequest(preventionRequest);
+		//}
 
 		//and poof you get the police triggered at you (the same as if you were killing a civilian)
 		
@@ -92,7 +87,7 @@ public class UnlockVehicleProgramAction extends HackProgramAction
 	}
 
 	//Opens the vehicle (yeah forreal)
-	private func OpenVehicle() -> Void
+	private func OpenVehicle(opt noDoorOpen:Bool) -> Void
 	{
 		//We get the object reference passed in the StartHacking function
 		//Note: you can also use the AdditionalData field in the hackInstanceSettings struct to pass random things to your hacks
@@ -124,7 +119,7 @@ public class UnlockVehicleProgramAction extends HackProgramAction
 			openMainDoor.SetProperties("seat_front_left");
 
 			//Queue all events to the vehicle persistent state and let the game handle it for you
-			if !this.hackInstanceSettings.isQuickhack
+			if !this.hackInstanceSettings.isQuickhack || noDoorOpen
 			{
 				vehicle.QueuePSEvent(vehicle,toggleVehicle);
 				vehicle.QueuePSEvent(vehicle,openMainDoor);

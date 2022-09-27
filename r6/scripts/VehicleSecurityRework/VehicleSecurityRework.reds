@@ -10,6 +10,9 @@ import TargetingExtensions.*
 import HackingExtensions.*
 @if(ModuleExists("HackingExtensions.Programs"))
 import HackingExtensions.Programs.*
+@if(ModuleExists("CustomHackingSystem.Tools"))
+import CustomHackingSystem.Tools.*
+
 
 //TODO: Comments (maybe later) 
 //(if you need help to understand how I done that pls just ping me on discord glhf)
@@ -21,7 +24,7 @@ public class VehicleSecurityRework extends ScriptableSystem
 	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
 	@runtimeProperty("ModSettings.category","General")
 	@runtimeProperty("ModSettings.displayName","Auto Unlock Security")
-	@runtimeProperty("ModSettings.description","Unlocks the security for ALL vehicles while also enabling Quickhacks (Requires Game Restart)")
+	@runtimeProperty("ModSettings.description","If you only want vehicle quickhacks (Requires Game Restart)")
 	public let forceSecurityUnlock:Bool = false;
 
 	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
@@ -29,6 +32,61 @@ public class VehicleSecurityRework extends ScriptableSystem
 	@runtimeProperty("ModSettings.displayName","Vehicle Combat Compatibility")
 	@runtimeProperty("ModSettings.description","Enables compatibility for Vehicle Combat by changing prvention spawns when failing hack")
 	public let vehicleCombatCompatibility:Bool = false;
+
+	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+	@runtimeProperty("ModSettings.category","Vehicle Combat Compatibility")
+	@runtimeProperty("ModSettings.displayName","Prevention Minimum Reaction Time")
+	@runtimeProperty("ModSettings.description","Sets the minimum amount of time before prevention kicks in")
+	@runtimeProperty("ModSettings.step", "0.1")
+  	@runtimeProperty("ModSettings.min", "0")
+  	@runtimeProperty("ModSettings.max", "10")
+	public let preventionReactionTimeMin:Float = 0.4;
+	
+	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+	@runtimeProperty("ModSettings.category","Vehicle Combat Compatibility")
+	@runtimeProperty("ModSettings.displayName","Prevention Maximum Reaction Time")
+	@runtimeProperty("ModSettings.description","Sets the maximum amount of time before prevention kicks in")
+	@runtimeProperty("ModSettings.step", "0.1")
+  	@runtimeProperty("ModSettings.min", "0")
+  	@runtimeProperty("ModSettings.max", "10")
+	public let preventionReactionTimeMax:Float = 1.0;
+
+	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+	@runtimeProperty("ModSettings.category","Vehicle Combat Compatibility")
+	@runtimeProperty("ModSettings.displayName","Vehicles To Spawn (Easy Hack)")
+	@runtimeProperty("ModSettings.description","Sets the number of vehicles to spawn in case of hack failure")
+	@runtimeProperty("ModSettings.step", "1")
+  	@runtimeProperty("ModSettings.min", "0")
+  	@runtimeProperty("ModSettings.max", "5")
+	public let vehiclesToSpawnEasy:Int32 = 1;
+
+	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+	@runtimeProperty("ModSettings.category","Vehicle Combat Compatibility")
+	@runtimeProperty("ModSettings.displayName","Vehicles To Spawn (Medium Hack)")
+	@runtimeProperty("ModSettings.description","Sets the number of vehicles to spawn in case of hack failure")
+	@runtimeProperty("ModSettings.step", "1")
+  	@runtimeProperty("ModSettings.min", "0")
+  	@runtimeProperty("ModSettings.max", "5")
+	public let vehiclesToSpawnMedium:Int32 = 2;
+
+
+	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+	@runtimeProperty("ModSettings.category","Vehicle Combat Compatibility")
+	@runtimeProperty("ModSettings.displayName","Vehicles To Spawn (Hard Hack)")
+	@runtimeProperty("ModSettings.description","Sets the number of vehicles to spawn in case of hack failure")
+	@runtimeProperty("ModSettings.step", "1")
+  	@runtimeProperty("ModSettings.min", "0")
+  	@runtimeProperty("ModSettings.max", "5")
+	public let vehiclesToSpawnHard:Int32 = 2;
+
+	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+	@runtimeProperty("ModSettings.category","Vehicle Combat Compatibility")
+	@runtimeProperty("ModSettings.displayName","Vehicles To Spawn (Very Hard Hack)")
+	@runtimeProperty("ModSettings.description","Sets the number of vehicles to spawn in case of hack failure")
+	@runtimeProperty("ModSettings.step", "1")
+  	@runtimeProperty("ModSettings.min", "0")
+  	@runtimeProperty("ModSettings.max", "5")
+	public let vehiclesToSpawnVeryHard:Int32 = 3;
 
 	private func OnAttach() -> Void
 	{
@@ -42,6 +100,48 @@ public class VehicleSecurityRework extends ScriptableSystem
 	}
 }
 
+public class AddVehicleAffiliation extends ScriptableTweak
+{
+	let affiliationList:ref<StringHashMap>;
+
+	public func GenerateAffiliations() -> Void
+	{
+		this.affiliationList = new StringHashMap();
+		for affiliation in TweakDBInterface.GetRecords(n"Affiliation")
+		{
+			let name:CName = TweakDBInterface.GetAffiliationRecord(affiliation.GetID()).EnumName();
+			this.affiliationList.Insert(NameToString(name),affiliation);
+		}
+		this.affiliationList.Insert(NameToString(n"Aldecados"),TweakDBInterface.GetAffiliationRecord(t"Factions.Aldecaldos"));
+	}
+	
+	public func ApplyAffiliationsToVehicles() -> Void
+	{
+		for vehicleRecord in TweakDBInterface.GetRecords(n"Vehicle")
+		{
+			let vehicleVisualTags:array<CName> = TweakDBInterface.GetVehicleRecord(vehicleRecord.GetID()).VisualTags();
+			if ArraySize(vehicleVisualTags) > 0
+			{
+				//Returns the first visual tag (pray that they didn't include more than 2 tags)
+				let vehicleVisualTag:CName = vehicleVisualTags[0];
+				if this.affiliationList.KeyExist(NameToString(vehicleVisualTag))
+				{
+					let affiliationToApply:ref<Affiliation_Record> = this.affiliationList.Get(NameToString((vehicleVisualTag))) as Affiliation_Record;
+					TweakDBManager.SetFlat(vehicleRecord.GetID() + t".affiliation",affiliationToApply.GetID());
+				}
+			}
+		}
+	}
+
+	protected cb func OnApply() -> Void
+	{
+		this.GenerateAffiliations();
+		this.ApplyAffiliationsToVehicles();
+	}
+}
+
+
+
 
 public class GlobalInputListener
 {
@@ -53,13 +153,13 @@ public class GlobalInputListener
 	{
 		
 		//Debug function to get all action names, Usually you are looking for Choice1 (Primary Interaction) or Choice2 (Secondary Interaction : Distract/Sell in Access Points)
-		//LogChannel(n"DEBUG",NameToString(ListenerAction.GetName(action)));
+		LogChannel(n"DEBUG",NameToString(ListenerAction.GetName(action)));
 
 		//Check if the vehicle can be hacked
 		if(CanHackTargetedVehicle(this.gameInstance,this.vehiclePS))
 		{
 			//Check if button has been released
-			if Equals(ListenerAction.GetName(action), n"Choice2") && ListenerAction.IsButtonJustReleased(action)
+			if Equals(ListenerAction.GetName(action), n"AttemptUnlockSecurity") && ListenerAction.IsButtonJustReleased(action)
 			{
 				let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.gameInstance);
 				this.customHackSystem = container.Get(n"HackingExtensions.CustomHackingSystem") as CustomHackingSystem;
@@ -110,19 +210,19 @@ public class InteractionUpdate
 			//Hardened Security (Locks the car for good)
 			if (IsVehicleSecurityHardened(this.vehiclePS))
 			{
-				AddLockedInteraction(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-Vehicle-SecurityHardened"), n"Choice2");
-				RemoveInteraction(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-UnlockVehicleHack-ProgramName"), n"Choice2");
+				AddLockedInteraction(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-Vehicle-SecurityHardened"), n"AttemptUnlockSecurity");
+				RemoveInteraction(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-UnlockVehicleHack-ProgramName"), n"AttemptUnlockSecurity");
 			}
 			else
 			{
-				AddInteraction(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-UnlockVehicleHack-ProgramName"), n"Choice2");
-				RemoveInteraction(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-Vehicle-SecurityHardened"), n"Choice2");
+				AddInteraction(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-UnlockVehicleHack-ProgramName"), n"AttemptUnlockSecurity");
+				RemoveInteraction(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-Vehicle-SecurityHardened"), n"AttemptUnlockSecurity");
 			}
 		}
 		else
 		{
-			RemoveInteraction(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-UnlockVehicleHack-ProgramName"), n"Choice2");
-			RemoveInteraction(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-Vehicle-SecurityHardened"), n"Choice2");
+			RemoveInteraction(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-UnlockVehicleHack-ProgramName"), n"AttemptUnlockSecurity");
+			RemoveInteraction(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-Vehicle-SecurityHardened"), n"AttemptUnlockSecurity");
 		}
 	}
 }
@@ -203,6 +303,138 @@ public func GetVehicleHijackDifficulty() -> String
 	return ToString(hijackDifficulty);
 }
 
+//VehicleObject overrides
+
+// Affiliation (Faction) override
+// Why ? Because some vehicles (like Vehicle.cs_savable_yaiba_kusanagi) simply don't have the Visual Tag that defines them as their faction
+// I came to an issue : some spawned vehicles that looked and belonged to Tyger Claws weren't affiliated
+// So this is (another) failsafe to try get every vehicles an affiliation when needed
+@addField(VehicleObject)
+public let AffiliationOverride: TweakDBID = t"";
+@addField(VehicleObject)
+public let AffiliationOverrideString: String = "";
+
+
+//Force the affiliation based on appearance name
+@wrapMethod(VehicleObject)
+protected cb func OnGameAttached() -> Bool 
+{
+	wrappedMethod();
+	if Equals(this.GetRecord().Affiliation().Type(),gamedataAffiliation.Unaffiliated)
+	{
+		let appearanceName:String = NameToString(this.GetCurrentAppearanceName());
+		
+		if StrContains(appearanceName,"tyger")
+		{
+			this.AffiliationOverride = t"Factions.TygerClaws";
+			this.AffiliationOverrideString = "Factions.TygerClaws";
+			return true;
+		}
+
+		if StrContains(appearanceName,"animals")
+		{
+			this.AffiliationOverride = t"Factions.Animals";
+			this.AffiliationOverrideString = "Factions.Animals";
+			return true;
+		}
+		
+		if StrContains(appearanceName,"6th")
+		{
+			this.AffiliationOverride = t"Factions.SixthStreet";
+			this.AffiliationOverrideString = "Factions.SixthStreet";
+			return true;
+		}
+		
+		if StrContains(appearanceName,"arasaka")
+		{
+			this.AffiliationOverride = t"Factions.TygerClaws";
+			this.AffiliationOverrideString = "Factions.TygerClaws";
+			return true;
+		}
+
+		if StrContains(appearanceName,"maelstrom")
+		{
+			this.AffiliationOverride = t"Factions.Maelstrom";
+			this.AffiliationOverrideString = "Factions.Maelstrom";
+			return true;
+		}
+
+		if StrContains(appearanceName,"valentinos")
+		{
+			this.AffiliationOverride = t"Factions.Valentinos";
+			this.AffiliationOverrideString = "Factions.Valentinos";
+			return true;
+		}
+
+		if StrContains(appearanceName,"aldecaldos") || StrContains(appearanceName,"aldecados")
+		{
+			this.AffiliationOverride = t"Factions.Aldecaldos";
+			this.AffiliationOverrideString = "Factions.Aldecaldos";
+			return true;
+		}
+			
+		if StrContains(appearanceName,"netwatch")
+		{
+			this.AffiliationOverride = t"Factions.NetWatch";
+			this.AffiliationOverrideString = "Factions.NetWatch";
+			return true;
+		}
+		
+		if StrContains(appearanceName,"militech")
+		{
+			this.AffiliationOverride = t"Factions.Militech";
+			this.AffiliationOverrideString = "Factions.Militech";
+			return true;
+		}
+
+		if StrContains(appearanceName,"wraiths")
+		{
+			this.AffiliationOverride = t"Factions.Wraiths";
+			this.AffiliationOverrideString = "Factions.Wraiths";
+			return true;
+		}
+
+		if StrContains(appearanceName,"mox")
+		{
+			this.AffiliationOverride = t"Factions.TheMox";
+			this.AffiliationOverrideString = "Factions.TheMox";
+			return true;
+		}
+		
+		//---------
+
+		if StrContains(appearanceName,"trama_team") || StrContains(appearanceName,"trauma")
+		{
+			this.AffiliationOverride = t"Factions.TraumaTeam";
+			this.AffiliationOverrideString = "Factions.TraumaTeam";
+			return true;
+		}
+		
+		if StrContains(appearanceName,"ncpd")
+		{
+			this.AffiliationOverride = t"Factions.NCPD";
+			this.AffiliationOverrideString = "Factions.NCPD";
+			return true;
+		}
+		
+		if StrContains(appearanceName,"news")
+		{
+			this.AffiliationOverride = t"Factions.News54";
+			this.AffiliationOverrideString = "Factions.News54";
+			return true;
+		}
+		
+		if StrContains(appearanceName,"kangtao")
+		{
+			this.AffiliationOverride = t"Factions.KangTao";
+			this.AffiliationOverrideString = "Factions.KangTao";
+			return true;
+		}
+	}
+}
+
+
+
 ////////////////////////////////////////////////////////////////////////
 
 //Player Puppet overrides
@@ -272,6 +504,7 @@ protected cb func OnTickUpdate(evt: ref<TickUpdate>) -> Void
 
 @addField(VehicleComponentPS)
 public let m_isVehicleHacked:Bool;
+
 @addField(VehicleComponentPS)
 public let m_hackAttemptsOnVehicle:Int32 = 0;
 
@@ -281,7 +514,6 @@ context: GetActionsContext, objectActionsCallbackController: wref<gameObjectActi
 out choices: array<InteractionChoice>, isAutoRefresh: Bool) -> Void 
 {
 	//TODO: remove it (?)
-
 	if (this.GetIsPlayerVehicle() || this.GetIsStolen() || this.IsMarkedAsQuest())
 	{
 		this.UnlockHackedVehicle();
@@ -333,6 +565,7 @@ protected func GetQuickHackActions(out actions: array<ref<DeviceAction>>, contex
 {
 	let action: ref<ScriptableDeviceAction>;
 	
+	//Remote Breach
 	action = this.ActionUnlockSecurity(GetVehicleHackDBDifficulty(this));
 	if IsVehicleSecurityHardened(this)
 	{
@@ -346,7 +579,23 @@ protected func GetQuickHackActions(out actions: array<ref<DeviceAction>>, contex
 		}
 	}
 	ArrayPush(actions,action);
+	
+	//Auto Hack
+	action = this.ActionVehicleAutoHack();
+	if IsVehicleSecurityHardened(this)
+	{
+		action.SetInactiveWithReason(false,LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityHardenedPanelInfo"));
+	}
+	else 
+	{
+		if IsVehicleSecurityBreached(this)
+		{
+			action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityDisabledPanelInfo"));
+		}
+	}
+	ArrayPush(actions,action);
 
+	//Explode
 	action = this.ActionOverloadVehicle();
 	if !IsVehicleSecurityBreached(this)
 	{
@@ -354,6 +603,7 @@ protected func GetQuickHackActions(out actions: array<ref<DeviceAction>>, contex
 	}
 	ArrayPush(actions,action);
 
+	//Distract
 	action = this.ActionVehicleDistraction();
 	if !IsVehicleSecurityBreached(this)
 	{
@@ -365,7 +615,7 @@ protected func GetQuickHackActions(out actions: array<ref<DeviceAction>>, contex
 	}	
 	ArrayPush(actions,action);
 
-
+	//Force Brakes
 	action = this.ActionVehicleForceBrakes();
 	if !IsVehicleSecurityBreached(this)
 	{
@@ -377,6 +627,7 @@ protected func GetQuickHackActions(out actions: array<ref<DeviceAction>>, contex
 	}
 	ArrayPush(actions,action);
 
+	//Block hacks if it is player owned
 	if this.GetIsPlayerVehicle()
 	{
 		ScriptableDeviceComponentPS.SetActionsInactiveAll(actions, LocKeyToString(n"VehicleSecurityRework-Quickhack-PlayerOwnedPanelInfo"));	
@@ -411,7 +662,7 @@ protected func GameAttached() -> Void
 	this.RefreshSkillchecks();
 }
 
-//Adds the vulnerabilities to the scanner
+//Adds the vulnerabilities & vehicle faction to the scanner
 @wrapMethod(VehicleObject)
 public const func CompileScannerChunks() -> Bool {
 	let scannerBlackboard: wref<IBlackboard> = GameInstance.GetBlackboardSystem(this.GetGame()).Get(GetAllBlackboardDefs().UI_ScannerModules);
@@ -423,7 +674,6 @@ public const func CompileScannerChunks() -> Bool {
 		for vulnerabilityTDBID in this.m_vehicleComponent.GetPS().m_quickHackVulnerabilties
 		{
 			let vulRecord:ref<ObjectAction_Record> = TweakDBInterface.GetObjectActionRecord(vulnerabilityTDBID);
-			//LogChannel(n"DEBUG",NameToString(vulRecord.ActionName()));
 			let isVulnerabilityActive: Bool = IsVehicleSecurityBreached(this.m_vehicleComponent.GetPS());
 			if(Equals(t"DeviceAction.RemoteSecurityBreach",vulnerabilityTDBID))
 			{
@@ -448,22 +698,29 @@ public const func CompileScannerChunks() -> Bool {
 	}
 	scannerBlackboard.SetVariant(GetAllBlackboardDefs().UI_ScannerModules.ScannerVulnerabilities, ToVariant(vulnerabilityChunk));
 
-	//So since CDPR didn't think of adding affiliation to vehicle records, i can't use this...
-	//Because it's obvious that a maelstrom vehicle with a maelstrom skin is "Factions.Unaffiliated"
-	// ---- REMOVED ---- 
-	//let faction:ref<ScannerFaction> = new ScannerFaction();
-	//let factionName:String = LocKeyToString(record.Affiliation().LocalizedName());
-	//if(Equals(record.Affiliation().GetID(),t"Factions.Unaffiliated"))
-	//{
-	//	factionName = GetAffiliationFromName(record.VisualTags()[0]);
-	//}
-	//else
-	//{
-	//	factionName = record.Affiliation().LocalizedName();
-	//}
-	//factionName = "LocKey#6548";
-	//faction.Set(factionName);
-	//scannerBlackboard.SetVariant(GetAllBlackboardDefs().UI_ScannerModules.ScannerFaction, ToVariant(faction),!this.m_vehicleComponent.GetPS().m_isVehicleHacked);
+	//Vehicle (possible) Affiliation
+	//Used in pair with Vehicle Combat to force response of a faction if a vehicle is attempted to be stolen
+	let faction:ref<ScannerFaction> = new ScannerFaction();
+	let factionName:String = LocKeyToString(this.GetRecord().Affiliation().LocalizedName());
+	if this.AffiliationOverride != t""
+	{
+		factionName = LocKeyToString(TweakDBInterface.GetAffiliationRecord(this.AffiliationOverride).LocalizedName());
+	}
+	else 
+	{
+		if(Equals(this.GetRecord().Affiliation().GetID(),t"Factions.Unaffiliated"))
+		{
+			// Primary Key : 4438 - "No Affiliation"
+			// Secondary Key : "Story-base-gameplay-static_data-database-factions-factions-Unaffiliated_localizedName" - "No Affiliation"
+			factionName = LocKeyToString(n"Story-base-gameplay-static_data-database-factions-factions-Unaffiliated_localizedName");
+		}
+		else
+		{
+			factionName = LocKeyToString(this.GetRecord().Affiliation().LocalizedName());
+		}
+	}
+	faction.Set(factionName);
+	scannerBlackboard.SetVariant(GetAllBlackboardDefs().UI_ScannerModules.ScannerFaction, ToVariant(faction),!this.m_vehicleComponent.GetPS().m_isVehicleHacked);
 
 	return wrappedMethod();
 }
