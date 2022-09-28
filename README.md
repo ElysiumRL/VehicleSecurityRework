@@ -10,7 +10,10 @@ A Cyberpunk 2077 mod that aims to improve civilian vehicle security
  - [ArchiveXL](https://www.nexusmods.com/cyberpunk2077/mods/4198)
  - [TweakXL](https://www.nexusmods.com/cyberpunk2077/mods/4197)
  - [RED4ext](https://www.nexusmods.com/cyberpunk2077/mods/2380)
+ - [Input Loader](https://www.nexusmods.com/cyberpunk2077/mods/4575)
+ - [Mod Settings](https://www.nexusmods.com/cyberpunk2077/mods/4885)
  - [Custom Hacking System](https://github.com/ElysiumRL/CustomHackingSystem)
+ - (Optional) [Vehicle Combat](https://www.nexusmods.com/cyberpunk2077/mods/3815)
 
 ### Installing the mod
  1. Make sure all the Requirements above are installed
@@ -22,10 +25,15 @@ The mod adds a layer of security on top of the already existing "Security". You 
 
 Certain vehicles (especially richer ones) do have a stronger security system : If you fail twice the hack, the security will be reinforced, blocking the possibility to hack them again
 
+**(NEW)** Added support for [Vehicle Combat](https://www.nexusmods.com/cyberpunk2077/mods/3815) mod : If you fail a hack, members from the hacked vehicle's faction will appear (e.g : If you try and fail to hack an Arasaka-marked vehicle, Arasaka members will come against you). Unaffiliated vehicles will spawn NCPD vehicles. To activate the support, make sure to enable "Vehicle Combat Compatibility" in game (via Mod Settings)
+
 The mod also adds quickhacks for vehicles :
  - Unlock Vehicle
  
     > Similar to the Remote Breach quickhack, this will open the hacking minigame panel. There is however a usage cooldown
+ - Auto Unlock
+ 
+    > Automatically unlocks the vehicle after a couple seconds. High RAM usage
  - Distract
  
     > Distracts nearby enemies for a short time
