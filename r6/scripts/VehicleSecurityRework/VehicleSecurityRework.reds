@@ -153,7 +153,7 @@ public class GlobalInputListener
 	{
 		
 		//Debug function to get all action names, Usually you are looking for Choice1 (Primary Interaction) or Choice2 (Secondary Interaction : Distract/Sell in Access Points)
-		LogChannel(n"DEBUG",NameToString(ListenerAction.GetName(action)));
+		//LogChannel(n"DEBUG",NameToString(ListenerAction.GetName(action)));
 
 		//Check if the vehicle can be hacked
 		if(CanHackTargetedVehicle(this.gameInstance,this.vehiclePS))
