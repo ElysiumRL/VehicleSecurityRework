@@ -336,6 +336,7 @@ protected let m_interaction: ref<InteractionComponent>;
 @wrapMethod(VehicleObject)
 protected cb func OnTakeControl(ri: EntityResolveComponentsInterface) -> Bool
 {
+	super.OnTakeControl(ri);
 	this.m_fxResourceMapper = EntityResolveComponentsInterface.GetComponent(ri, n"FxResourceMapper") as FxResourceMapperComponent;
 	this.m_slotComponent = EntityResolveComponentsInterface.GetComponent(ri, n"main_slot") as SlotComponent;
     this.m_effectVisualization = EntityResolveComponentsInterface.GetComponent(ri, n"AreaEffectVisualization") as AreaEffectVisualizationComponent;
@@ -344,7 +345,7 @@ protected cb func OnTakeControl(ri: EntityResolveComponentsInterface) -> Bool
     this.m_scanningComponent = EntityResolveComponentsInterface.GetComponent(ri, n"scanning") as ScanningComponent;
     this.m_uiComponent = EntityResolveComponentsInterface.GetComponent(ri, n"ui") as worlduiWidgetComponent;
     this.m_interaction = EntityResolveComponentsInterface.GetComponent(ri, n"interaction") as InteractionComponent;
-
+	
 
 	wrappedMethod(ri);
 
@@ -352,7 +353,8 @@ protected cb func OnTakeControl(ri: EntityResolveComponentsInterface) -> Bool
 
 @wrapMethod(VehicleObject)
   protected cb func OnRequestComponents(ri: EntityRequestComponentsInterface) -> Bool {
-    EntityRequestComponentsInterface.RequestComponent(ri, n"FxResourceMapper", n"FxResourceMapperComponent", true);
+    super.OnRequestComponents(ri);
+	EntityRequestComponentsInterface.RequestComponent(ri, n"FxResourceMapper", n"FxResourceMapperComponent", true);
 	EntityRequestComponentsInterface.RequestComponent(ri, n"AreaEffectVisualization", n"AreaEffectVisualizationComponent", true);
     EntityRequestComponentsInterface.RequestComponent(ri, n"ResourceLibrary", n"ResourceLibraryComponent", true);
     EntityRequestComponentsInterface.RequestComponent(ri, n"main_slot", n"SlotComponent", true);
@@ -571,8 +573,8 @@ protected func SendQuickhackCommands(shouldOpen: Bool) -> Void {
 	else
 	{
 	  i = 0;
-	  while i < ArraySize(playerQHacksList)
-	  {
+	while i < ArraySize(playerQHacksList)
+	{
 		newCommand = new QuickhackData();
 		sAction = null;
 		ArrayClear(actionStartEffects);
@@ -580,72 +582,89 @@ protected func SendQuickhackCommands(shouldOpen: Bool) -> Void {
 		if NotEquals(actionRecord.ObjectActionType().Type(), gamedataObjectActionType.DeviceQuickHack)
 		{
 		}
-		else {
-		  actionMatchDeck = false;
-		  i1 = 0;
-		  while i1 < ArraySize(actions) {
-			sAction = actions[i1] as ScriptableDeviceAction;
-			//LogChannel(n"DEBUG",NameToString(sAction.actionName));
-			if Equals(actionRecord.ActionName(), sAction.GetObjectActionRecord().ActionName()) {
-			  //LogChannel(n"DEBUG","Matches Wrong Deck");
-			  actionMatchDeck = true;
-			  if actionRecord.Priority() >= sAction.GetObjectActionRecord().Priority() {
-				sAction.SetObjectActionID(playerQHacksList[i].actionRecord.GetID());
-			  } else {
-				actionRecord = sAction.GetObjectActionRecord();
-			  };
-			  newCommand.m_uploadTime = sAction.GetActivationTime();
-			  newCommand.m_duration = sAction.GetDurationValue();
-			  break;
-			};
-			//LogChannel(n"DEBUG","	Checking " + NameToString(sAction.actionName));
-//TODO AAAAAAAAAAAAAAAAAAAAAAAAA (highlight)
-			if customHackSystem.customDeviceActions.KeyExist(NameToString(sAction.actionName)) 
-			&& !ArrayContains(customActionsFound,sAction.GetObjectActionRecord())
-			{
-			  //LogChannel(n"DEBUG","Matches Deck");
-			  actionMatchDeck = true;
-			  actionRecord = sAction.GetObjectActionRecord();
-			  newCommand.m_uploadTime = sAction.GetActivationTime();
-			  newCommand.m_duration = sAction.GetDurationValue();
-			  ArrayPush(customActionsFound,sAction.GetObjectActionRecord());
-			  break;
-			};
+		else 
+		{
+			actionMatchDeck = false;
+		  	i1 = 0;
+		  	while i1 < ArraySize(actions) 
+		  	{
+				sAction = actions[i1] as ScriptableDeviceAction;
+				//LogChannel(n"DEBUG",NameToString(sAction.actionName));
+				if Equals(actionRecord.ActionName(), sAction.GetObjectActionRecord().ActionName())
+				{
+					//LogChannel(n"DEBUG","Matches Wrong Deck");
+					actionMatchDeck = true;
+				  	if actionRecord.Priority() >= sAction.GetObjectActionRecord().Priority()
+					{
+						sAction.SetObjectActionID(playerQHacksList[i].actionRecord.GetID());
+				  	} 
+					else 
+					{
+						actionRecord = sAction.GetObjectActionRecord();
+				  	};
+					newCommand.m_uploadTime = sAction.GetActivationTime();
+					newCommand.m_duration = sAction.GetDurationValue();
+					break;
+				};
 
-			i1 += 1;
-		  };
-		  newCommand.m_actionOwnerName = actionOwnerName;
-		  newCommand.m_title = LocKeyToString(actionRecord.ObjectActionUI().Caption());
-		  newCommand.m_description = LocKeyToString(actionRecord.ObjectActionUI().Description());
-		  newCommand.m_icon = actionRecord.ObjectActionUI().CaptionIcon().TexturePartID().GetID();
-		  newCommand.m_iconCategory = actionRecord.GameplayCategory().IconName();
-		  newCommand.m_type = actionRecord.ObjectActionType().Type();
-		  newCommand.m_actionOwner = this.GetEntityID();
-		  newCommand.m_isInstant = false;
-		  newCommand.m_ICELevel = iceLVL;
-		  newCommand.m_ICELevelVisible = false;
-		  newCommand.m_vulnerabilities = this.GetVehiclePS().GetActiveQuickHackVulnerabilities();
-		  newCommand.m_actionState = EActionInactivityReson.Locked;
-		  newCommand.m_quality = playerQHacksList[i].quality;
-		  newCommand.m_costRaw = BaseScriptableAction.GetBaseCostStatic(playerRef, actionRecord);
-		  newCommand.m_category = actionRecord.HackCategory();
-		  ArrayClear(actionCompletionEffects);
-		  actionRecord.CompletionEffects(actionCompletionEffects);
-		  newCommand.m_actionCompletionEffects = actionCompletionEffects;
-		  actionRecord.StartEffects(actionStartEffects);
-		  i1 = 0;
-		  while i1 < ArraySize(actionStartEffects) {
-			if Equals(actionStartEffects[i1].StatusEffect().StatusEffectType().Type(), gamedataStatusEffectType.PlayerCooldown) {
-			  actionStartEffects[i1].StatusEffect().Duration().StatModifiers(statModifiers);
-			  newCommand.m_cooldown = RPGManager.CalculateStatModifiers(statModifiers, this.GetGame(), playerRef, Cast<StatsObjectID>(playerRef.GetEntityID()), Cast<StatsObjectID>(playerRef.GetEntityID()));
-			  newCommand.m_cooldownTweak = actionStartEffects[i1].StatusEffect().GetID();
-			  ArrayClear(statModifiers);
-			};
-			if newCommand.m_cooldown != 0.00 {
-			  break;
-			};
-			i1 += 1;
-		  };
+				//LogChannel(n"DEBUG","	Checking " + NameToString(sAction.actionName));
+
+				//Added this : finds if the action passed matches the "deck" of CustomHackingSystem (aka : simply the actions registered in the system)
+				//--------------------------------------------------------------------------------
+
+				if customHackSystem.customDeviceActions.KeyExist(NameToString(sAction.actionName)) 
+				&& !ArrayContains(customActionsFound,sAction.GetObjectActionRecord())
+				{
+				  //LogChannel(n"DEBUG","Matches Deck");
+				  actionMatchDeck = true;
+				  actionRecord = sAction.GetObjectActionRecord();
+				  newCommand.m_uploadTime = sAction.GetActivationTime();
+				  newCommand.m_duration = sAction.GetDurationValue();
+				  ArrayPush(customActionsFound,sAction.GetObjectActionRecord());
+				  break;
+				};
+
+				//--------------------------------------------------------------------------------
+
+				i1 += 1;
+		  	};
+
+			newCommand.m_actionOwnerName = actionOwnerName;
+			newCommand.m_title = LocKeyToString(actionRecord.ObjectActionUI().Caption());
+			newCommand.m_description = LocKeyToString(actionRecord.ObjectActionUI().Description());
+			newCommand.m_icon = actionRecord.ObjectActionUI().CaptionIcon().TexturePartID().GetID();
+			newCommand.m_iconCategory = actionRecord.GameplayCategory().IconName();
+			newCommand.m_type = actionRecord.ObjectActionType().Type();
+			newCommand.m_actionOwner = this.GetEntityID();
+			newCommand.m_isInstant = false;
+			newCommand.m_ICELevel = iceLVL;
+			newCommand.m_ICELevelVisible = false;
+			newCommand.m_vulnerabilities = this.GetVehiclePS().GetActiveQuickHackVulnerabilities();
+			newCommand.m_actionState = EActionInactivityReson.Locked;
+			newCommand.m_quality = playerQHacksList[i].quality;
+			newCommand.m_costRaw = BaseScriptableAction.GetBaseCostStatic(playerRef, actionRecord);
+			newCommand.m_category = actionRecord.HackCategory();
+			ArrayClear(actionCompletionEffects);
+			actionRecord.CompletionEffects(actionCompletionEffects);
+			newCommand.m_actionCompletionEffects = actionCompletionEffects;
+			actionRecord.StartEffects(actionStartEffects);
+			i1 = 0;
+
+			while i1 < ArraySize(actionStartEffects) 
+			{
+				if Equals(actionStartEffects[i1].StatusEffect().StatusEffectType().Type(), gamedataStatusEffectType.PlayerCooldown)
+				{
+				  actionStartEffects[i1].StatusEffect().Duration().StatModifiers(statModifiers);
+				  newCommand.m_cooldown = RPGManager.CalculateStatModifiers(statModifiers, this.GetGame(), playerRef, Cast<StatsObjectID>(playerRef.GetEntityID()), Cast<StatsObjectID>(playerRef.GetEntityID()));
+				  newCommand.m_cooldownTweak = actionStartEffects[i1].StatusEffect().GetID();
+				  ArrayClear(statModifiers);
+				};
+				if newCommand.m_cooldown != 0.00 
+				{
+					break;
+				};
+				i1 += 1;
+		  	};
 		  if actionMatchDeck {
 			if !IsDefined(this as GenericDevice) {
 			  choice = emptyChoice;
@@ -803,7 +822,7 @@ public final func GetDistractionPointPosition(device: wref<GameObject>) -> Vecto
 }
 
 @addMethod(VehicleObject)
-private final func ShowQuickHackDuration(action: ref<ScriptableDeviceAction>) -> Void 
+private func ShowQuickHackDuration(action: ref<ScriptableDeviceAction>) -> Void 
 {
     let actionDurationListener: ref<QuickHackDurationListener>;
     let statMod: ref<gameStatModifierData>;
@@ -818,7 +837,6 @@ private final func ShowQuickHackDuration(action: ref<ScriptableDeviceAction>) ->
     statPoolSys.RequestRegisteringListener(Cast<StatsObjectID>(this.GetEntityID()), gamedataStatPoolType.QuickHackDuration, actionDurationListener);
     statPoolSys.RequestAddingStatPool(Cast<StatsObjectID>(this.GetEntityID()), t"BaseStatPools.QuickHackDuration", true);
 }
-
 
 @addField(VehicleObject)
 public let m_activeStatusEffects:array<wref<StatusEffect_Record>>;

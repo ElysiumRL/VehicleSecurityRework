@@ -13,14 +13,14 @@ import HackingExtensions.Programs.*
 @if(ModuleExists("CustomHackingSystem.Tools"))
 import CustomHackingSystem.Tools.*
 
+//Source code : https://github.com/ElysiumRL/VehicleSecurityRework
+//Discord : Elysium#7743 (if you want to DM for anything)
 
-//TODO: Comments (maybe later) 
-//(if you need help to understand how I done that pls just ping me on discord glhf)
-
-
-//Scriptable System used by the lua part of the mod to find if redscript files are installed (at least this one) or not
+//Scriptable System used by the lua part of the mod to find if redscript files are installed (at least this one file) or not
 public class VehicleSecurityRework extends ScriptableSystem
 {
+	//Settings
+
 	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
 	@runtimeProperty("ModSettings.category","General")
 	@runtimeProperty("ModSettings.displayName","Auto Unlock Security")
@@ -69,7 +69,6 @@ public class VehicleSecurityRework extends ScriptableSystem
   	@runtimeProperty("ModSettings.max", "5")
 	public let vehiclesToSpawnMedium:Int32 = 2;
 
-
 	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
 	@runtimeProperty("ModSettings.category","Vehicle Combat Compatibility")
 	@runtimeProperty("ModSettings.displayName","Vehicles To Spawn (Hard Hack)")
@@ -100,32 +99,44 @@ public class VehicleSecurityRework extends ScriptableSystem
 	}
 }
 
+//TweakXL : Add (as much as possible) factions to all vehicle records
 public class AddVehicleAffiliation extends ScriptableTweak
 {
-	let affiliationList:ref<StringHashMap>;
+	//Strings of all factions in the game
+	let affiliationList: ref<StringHashMap>;
 
+	//Finds all existing Affiliations (factions) and store their names (as String)
 	public func GenerateAffiliations() -> Void
 	{
 		this.affiliationList = new StringHashMap();
+		//Get all factions
 		for affiliation in TweakDBInterface.GetRecords(n"Affiliation")
 		{
+			//Get their names
 			let name:CName = TweakDBInterface.GetAffiliationRecord(affiliation.GetID()).EnumName();
+			//Insert their names to the "dictionary"
 			this.affiliationList.Insert(NameToString(name),affiliation);
 		}
+		//Extra insert because CDPR made some spelling mistakes on some records
 		this.affiliationList.Insert(NameToString(n"Aldecados"),TweakDBInterface.GetAffiliationRecord(t"Factions.Aldecaldos"));
 	}
 	
 	public func ApplyAffiliationsToVehicles() -> Void
 	{
+		//Get all Vehicle records
 		for vehicleRecord in TweakDBInterface.GetRecords(n"Vehicle")
 		{
+			//Find the "VisualTags", this flat often stores faction as CNames
 			let vehicleVisualTags:array<CName> = TweakDBInterface.GetVehicleRecord(vehicleRecord.GetID()).VisualTags();
 			if ArraySize(vehicleVisualTags) > 0
 			{
-				//Returns the first visual tag (pray that they didn't include more than 2 tags)
+				//Returns the first visual tag (hope that they didn't include more than 2 tags)
 				let vehicleVisualTag:CName = vehicleVisualTags[0];
+				
+				//Look if the visual tag matches one of the factions
 				if this.affiliationList.KeyExist(NameToString(vehicleVisualTag))
 				{
+					//Apply faction to vehicle
 					let affiliationToApply:ref<Affiliation_Record> = this.affiliationList.Get(NameToString((vehicleVisualTag))) as Affiliation_Record;
 					TweakDBManager.SetFlat(vehicleRecord.GetID() + t".affiliation",affiliationToApply.GetID());
 				}
@@ -133,6 +144,7 @@ public class AddVehicleAffiliation extends ScriptableTweak
 		}
 	}
 
+	//Apply TweakDB modifications
 	protected cb func OnApply() -> Void
 	{
 		this.GenerateAffiliations();
@@ -142,7 +154,7 @@ public class AddVehicleAffiliation extends ScriptableTweak
 
 
 
-
+//Class used for keybind events
 public class GlobalInputListener
 {
 	let gameInstance: GameInstance;
@@ -161,12 +173,15 @@ public class GlobalInputListener
 			//Check if button has been released
 			if Equals(ListenerAction.GetName(action), n"AttemptUnlockSecurity") && ListenerAction.IsButtonJustReleased(action)
 			{
+				//Get Custom Hacking System (in order to start hacks)
 				let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.gameInstance);
 				this.customHackSystem = container.Get(n"HackingExtensions.CustomHackingSystem") as CustomHackingSystem;
 
+				//Get the TweakDB record of the hack we want to use (aka: the difficulty)
 				let hackToUse:TweakDBID = GetVehicleHackDBDifficulty(this.vehiclePS);
 				if !IsVehicleSecurityHardened(this.vehiclePS)
 				{
+					//Start the hack
 					this.customHackSystem.StartNewHackInstance("Unlock Vehicle",hackToUse,this.vehiclePS);
 				}
 			}
@@ -202,11 +217,12 @@ public class InteractionUpdate
 {
 	let gameInstance: GameInstance;
 	let vehiclePS:ref<VehicleComponentPS>;
+	
+	//Function called every tick
 	public func Update() -> Void
 	{
 		if(CanHackTargetedVehicle(this.gameInstance,this.vehiclePS))
 		{
-			//let difficulty:String =	this.vehiclePS.GetVehicleCrackLockDifficulty();
 			//Hardened Security (Locks the car for good)
 			if (IsVehicleSecurityHardened(this.vehiclePS))
 			{
@@ -227,7 +243,7 @@ public class InteractionUpdate
 	}
 }
 
-//Event called every frame
+//Event called every tick
 public class TickUpdate extends Event 
 {
 }
@@ -276,10 +292,8 @@ public func CheckToLockSecurity(ps:ref<VehicleComponentPS>,lockDifficulty:String
 	ps.isSecurityHardened = ((Equals(lockDifficulty,"HARD") || Equals(lockDifficulty,"IMPOSSIBLE")) && ps.m_hackAttemptsOnVehicle >= 2);
 }
 
-//TODO (if possible) : Save Persistence using straight up game save (without GameSession)
 @addField(VehicleComponentPS)
 public let isSecurityHardened:Bool = false;
-
 
 @addMethod(VehicleComponentPS)
 public func GetVehicleCrackLockDifficulty() -> String
@@ -314,12 +328,12 @@ public let AffiliationOverride: TweakDBID = t"";
 @addField(VehicleObject)
 public let AffiliationOverrideString: String = "";
 
-
-//Force the affiliation based on appearance name
 @wrapMethod(VehicleObject)
 protected cb func OnGameAttached() -> Bool 
 {
 	wrappedMethod();
+	//Force the affiliation based on appearance name
+	//So sadly since tweakDB editing isn't enough... Gotta have to do this for every faction (or at least as much as possible)
 	if Equals(this.GetRecord().Affiliation().Type(),gamedataAffiliation.Unaffiliated)
 	{
 		let appearanceName:String = NameToString(this.GetCurrentAppearanceName());
@@ -558,84 +572,6 @@ public final func SetHasStateBeenModifiedByQuest(set: Bool) -> Void
 }
 
 
-
-//Get all quickhacks for the vehicle
-@replaceMethod(VehicleComponentPS)
-protected func GetQuickHackActions(out actions: array<ref<DeviceAction>>, context: GetActionsContext) -> Void 
-{
-	let action: ref<ScriptableDeviceAction>;
-	
-	//Remote Breach
-	action = this.ActionUnlockSecurity(GetVehicleHackDBDifficulty(this));
-	if IsVehicleSecurityHardened(this)
-	{
-		action.SetInactiveWithReason(false,LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityHardenedPanelInfo"));
-	}
-	else 
-	{
-		if IsVehicleSecurityBreached(this)
-		{
-			action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityDisabledPanelInfo"));
-		}
-	}
-	ArrayPush(actions,action);
-	
-	//Auto Hack
-	action = this.ActionVehicleAutoHack();
-	if IsVehicleSecurityHardened(this)
-	{
-		action.SetInactiveWithReason(false,LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityHardenedPanelInfo"));
-	}
-	else 
-	{
-		if IsVehicleSecurityBreached(this)
-		{
-			action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityDisabledPanelInfo"));
-		}
-	}
-	ArrayPush(actions,action);
-
-	//Explode
-	action = this.ActionOverloadVehicle();
-	if !IsVehicleSecurityBreached(this)
-	{
-		action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
-	}
-	ArrayPush(actions,action);
-
-	//Distract
-	action = this.ActionVehicleDistraction();
-	if !IsVehicleSecurityBreached(this)
-	{
-		action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
-	}
-	if this.m_distractExecuted
-	{
-		action.SetInactiveWithReason(false, "LocKey#7004");	
-	}	
-	ArrayPush(actions,action);
-
-	//Force Brakes
-	action = this.ActionVehicleForceBrakes();
-	if !IsVehicleSecurityBreached(this)
-	{
-		action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
-	}
-	if this.quickhackForceBrakesExecuted
-	{
-		action.SetInactiveWithReason(false, "LocKey#7004");	
-	}
-	ArrayPush(actions,action);
-
-	//Block hacks if it is player owned
-	if this.GetIsPlayerVehicle()
-	{
-		ScriptableDeviceComponentPS.SetActionsInactiveAll(actions, LocKeyToString(n"VehicleSecurityRework-Quickhack-PlayerOwnedPanelInfo"));	
-	}
-
-	this.FinalizeGetQuickHackActions(actions, context);
-}
-
 @wrapMethod(VehicleComponentPS)
 protected func GameAttached() -> Void 
 {
@@ -664,10 +600,9 @@ protected func GameAttached() -> Void
 
 //Adds the vulnerabilities & vehicle faction to the scanner
 @wrapMethod(VehicleObject)
-public const func CompileScannerChunks() -> Bool {
+public const func CompileScannerChunks() -> Bool 
+{
 	let scannerBlackboard: wref<IBlackboard> = GameInstance.GetBlackboardSystem(this.GetGame()).Get(GetAllBlackboardDefs().UI_ScannerModules);
-
-	//let quickhackActionsCompletion:array<wref<ObjectActionEffect_Record>>;
 	let vulnerabilityChunk:ref<ScannerVulnerabilities> = new ScannerVulnerabilities();
 	if !this.m_vehicleComponent.GetPS().GetIsPlayerVehicle()
 	{
@@ -740,7 +675,7 @@ public final func DetermineActionsToPush(interaction: ref<InteractionComponent>,
 	let vehDataPackage: wref<VehicleDataPackage_Record>;
 	VehicleComponent.GetVehicleDataPackage(this.GetGameInstance(), this.GetOwnerEntity(), vehDataPackage);
 
-//Should not be needed since it's on Init now 	
+	//Should not be needed since it's on Init now 	
 	if this.GetIsDestroyed() 
 	{
 		this.PushActionsToInteractionComponent(interaction, choices, context);
@@ -810,11 +745,9 @@ public final func DetermineActionsToPush(interaction: ref<InteractionComponent>,
 	while i < ArraySize(actionsToRemove) 
 	{
 		ArrayRemove(actionRecords,actionsToRemove[i]);
-		i+=1;
+		i += 1;
 	}
-
-	i=0
-	;
+	i = 0;
 
 	this.GetValidChoices(actionRecords, this.ChangeToActionContext(context), objectActionsCallbackController, choices, isAutoRefresh);
 	this.FinalizeGetActions(actions);
