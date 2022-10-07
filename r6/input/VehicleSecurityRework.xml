@@ -1,25 +1,25 @@
 <?xml version="1.0"?>
 <bindings>
-    <context name="VehicleSecurityRework" >
-        <action name="AttemptUnlockSecurity" map="AttemptUnlockSecurity" />
-    </context>
+	<context name="VehicleSecurityRework" >
+		<action name="AttemptUnlockSecurity" map="AttemptUnlockSecurity" />
+	</context>
 	
-    <context name="Exploration" append="true">
-        <include name="VehicleSecurityRework" />
-    </context>
+	<context name="Exploration" append="true">
+		<include name="VehicleSecurityRework" />
+	</context>
 
-    <acceptedEvents action="AttemptUnlockSecurity" >
-	    <event name="BUTTON_RELEASED" />
+	<acceptedEvents action="AttemptUnlockSecurity" >
+		<event name="BUTTON_RELEASED" />
 	</acceptedEvents>
 
-        <!-- Change any hotkey(s) here -->
-        <!-- First key to change (Default : IK_R) is for keyboards -->
-        <!-- Second key to change (Default : IK_Pad_B_CIRCLE) is for controllers -->
-        <!-- List of hotkeys available : https://nativedb.red4ext.com/EInputKey -->
-    <mapping name="AttemptUnlockSecurity" type="Button" >
-        <button id="IK_R" />
-        <button id="IK_Pad_B_CIRCLE" />
+		<!-- Change any hotkey(s) here -->
+		<!-- First key to change (Default : IK_R) is for keyboards -->
+		<!-- Second key to change (Default : IK_Pad_B_CIRCLE) is for controllers -->
+		<!-- List of hotkeys available : https://nativedb.red4ext.com/EInputKey -->
+	<mapping name="AttemptUnlockSecurity" type="Button" >
+		<button id="IK_R" />
+		<button id="IK_Pad_B_CIRCLE" />
 	</mapping>
-        <!-- Change any hotkey(s) here -->
+		<!-- Change any hotkey(s) here -->
 
 </bindings>
