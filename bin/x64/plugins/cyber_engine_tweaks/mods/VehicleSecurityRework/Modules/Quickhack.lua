@@ -11,6 +11,7 @@ function Quickhack.Generate()
 
 	local explodeIcon = Quickhack.API.CreateUIIcon("explosive","base\\gameplay\\gui\\common\\icons\\mappin_icons.inkatlas")
 	local forceBrakesIcon = Quickhack.API.CreateUIIcon("GrenadeExplode","base\\gameplay\\gui\\common\\icons\\mappin_icons.inkatlas")
+	local recklessDrivingIcon = Quickhack.API.CreateUIIcon("OverLoadDevice","base\\gameplay\\gui\\common\\icons\\quickhacks_icons.inkatlas")
 	local remoteSecurityBreachIcon = Quickhack.API.CreateUIIcon("BreachProtocol","base\\gameplay\\gui\\common\\icons\\quickhacks_icons.inkatlas")
 	local vehicleDistractionIcon = Quickhack.API.CreateUIIcon("CommunicationCallOut","base\\gameplay\\gui\\common\\icons\\quickhacks_icons.inkatlas")
 
@@ -30,16 +31,24 @@ function Quickhack.Generate()
 	local forceVehicleBrakesCost = Quickhack.API.CreateQuickhackMemoryStatModifier("ForceBrakes","BaseCost","Additive",4.00)
 	local forceVehicleBrakesInteraction = Quickhack.API.CreateInteractionUI("ForceBrakes",LocKey(3652011),LocKey(3652012),forceBrakesIcon)
 	local forceVehicleBrakesQuickhack = Quickhack.API.CreateQuickhack("ForceBrakes",forceVehicleBrakesCategory,forceVehicleBrakesInteraction,forceVehicleBrakesCost,0.00,0.75)
+	
+	local recklessDrivingCategory = Quickhack.API.CreateQuickhackGameplayCategory("RecklessDriving",recklessDrivingIcon,LocKey(3652019),LocKey(3652018))
+	local recklessDrivingCost = Quickhack.API.CreateQuickhackMemoryStatModifier("RecklessDriving","BaseCost","Additive",4.00)
+	local recklessDrivingInteraction = Quickhack.API.CreateInteractionUI("RecklessDriving",LocKey(3652018),LocKey(3652019),recklessDrivingIcon)
+	local recklessDrivingQuickhack = Quickhack.API.CreateQuickhack("RecklessDriving",recklessDrivingCategory,recklessDrivingInteraction,recklessDrivingCost,0.00,0.75)
 
 	local distractVehicleCategory = Quickhack.API.CreateQuickhackGameplayCategory("VehicleDistraction",vehicleDistractionIcon,LocKey(3652012),LocKey(3652011))
 	local distractVehicleCost = Quickhack.API.CreateQuickhackMemoryStatModifier("VehicleDistraction","BaseCost","Additive",4.00)
 	--local distractVehicleInteraction = Quickhack.API.CreateInteractionUI("VehicleDistraction",LocKey(3652011),LocKey(3652012),vehicleDistractionIcon)
 	local distractVehicleQuickhack = Quickhack.API.CreateQuickhack("VehicleDistraction",distractVehicleCategory,"Interactions.MalfunctionHack",distractVehicleCost,0.00,0.5)
 	
-	local autoHackBrakesCategory = Quickhack.API.CreateQuickhackGameplayCategory("AutoHack",remoteSecurityBreachIcon,LocKey(3652017),LocKey(3652016))
-	local autoHackBrakesCost = Quickhack.API.CreateQuickhackMemoryStatModifier("AutoHack","BaseCost","Additive",8.00)
-	local autoHackBrakesInteraction = Quickhack.API.CreateInteractionUI("AutoHack",LocKey(3652016),LocKey(3652017),remoteSecurityBreachIcon)
-	local autoHackBrakesQuickhack = Quickhack.API.CreateQuickhack("AutoHack",autoHackBrakesCategory,autoHackBrakesInteraction,autoHackBrakesCost,0.00,4.00)
+	local autoHackCategory = Quickhack.API.CreateQuickhackGameplayCategory("AutoHack",remoteSecurityBreachIcon,LocKey(3652017),LocKey(3652016))
+	--local autoHackCost = Quickhack.API.CreateQuickhackMemoryStatModifier("AutoHack","BaseCost","Additive",8.00)
+	local autoHackCost = Quickhack.API.CreateQuickhackMemoryStatModifier("AutoHack","BaseCost","Additive",1.00)
+
+	local autoHackInteraction = Quickhack.API.CreateInteractionUI("AutoHack",LocKey(3652016),LocKey(3652017),remoteSecurityBreachIcon)
+	--local autoHackQuickhack = Quickhack.API.CreateQuickhack("AutoHack",autoHackCategory,autoHackInteraction,autoHackCost,0.00,4.00)
+	local autoHackQuickhack = Quickhack.API.CreateQuickhack("AutoHack",autoHackCategory,autoHackInteraction,autoHackCost,0.00,1.00)
 
 end
 
