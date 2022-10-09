@@ -3,6 +3,10 @@ module VehicleSecurityRework.Quickhack
 import HackingExtensions.*
 import CustomHackingSystem.Tools.*
 
+@if(ModuleExists("LetThereBeFlight.Compatibility"))
+import LetThereBeFlight.Compatibility.*
+
+
 /*
 	Module used to setup the quickhack functionalities for vehicles
 
@@ -19,20 +23,24 @@ protected const func ShouldRegisterToHUD() -> Bool
 	}
 	return wrappedMethod();
 }
-
+@if(!ModuleExists("LetThereBeFlight.Compatibility"))
 @replaceMethod(VehicleObject)
 public const func CanRevealRemoteActionsWheel() -> Bool
 {
 	return true;
 }
 
-@replaceMethod(VehicleObject)
+//LOCKEY
+@if(!ModuleExists("LetThereBeFlight.Compatibility"))
+@addMethod(VehicleObject)
 public const func IsQuickHackAble() -> Bool
 {
 	return true;
 }
 
-@replaceMethod(VehicleObject)
+//LOCKEY
+@if(!ModuleExists("LetThereBeFlight.Compatibility"))
+@addMethod(VehicleObject)
 public const func IsQuickHacksExposed() -> Bool
 {
 	return true;
@@ -151,11 +159,15 @@ protected final func DetermineInteractionStateByTask(opt context: GetActionsCont
   GameInstance.GetDelaySystem(this.GetGame()).QueueTask(this, taskData, n"DetermineInteractionStateTask", gameScriptTaskExecutionStage.Any);
 }
 
-
+//LOCKEY
+@if(!ModuleExists("LetThereBeFlight.Compatibility"))
 @addMethod(VehicleObject)
 protected cb func OnQuickSlotCommandUsed(evt: ref<QuickSlotCommandUsed>) -> Bool {
   this.ExecuteAction(evt.action, GameInstance.GetPlayerSystem(this.GetGame()).GetLocalPlayerControlledGameObject());
 }
+
+//LOCKEY
+@if(!ModuleExists("LetThereBeFlight.Compatibility"))
 @addMethod(VehicleObject)
 protected final const func ExecuteAction(action: ref<DeviceAction>, opt executor: wref<GameObject>) -> Bool {
   let sAction: ref<ScriptableDeviceAction> = action as ScriptableDeviceAction;
@@ -499,6 +511,8 @@ private final func ResolveDeviceOperationOnFocusMode(visionType: gameVisionModeT
   };
 }
 
+//LOCKEY
+@if(!ModuleExists("LetThereBeFlight.Compatibility"))
 @addMethod(VehicleObject)
 public const func CanRevealRemoteActionsWheel() -> Bool
 {
@@ -514,6 +528,8 @@ public const func GetPlayerMainObject() -> ref<PlayerPuppet>
 @addField(VehicleObject)
 protected let m_isQhackUploadInProgerss:Bool;
 
+//LOCKEY
+@if(!ModuleExists("LetThereBeFlight.Compatibility"))
 @addMethod(VehicleObject)
 protected func SendQuickhackCommands(shouldOpen: Bool) -> Void {
   let actions: array<ref<DeviceAction>>;
@@ -537,9 +553,56 @@ protected func SendQuickhackCommands(shouldOpen: Bool) -> Void {
   GameInstance.GetUISystem(this.GetGame()).QueueEvent(quickSlotsManagerNotification);
 }
 
-//TODO: HIGHLIGHT
+//TODO: (highlight)
+//This has to be probably the worst thing I've ever made but it seems to not make the game crash while still calling the GetRemoteActions
+//Wrapping a non-existing method and betting on the "compiling" (or precompile or whatever) of the LTBF file to be made BEFORE this file so that it can be wrapped
+//.....
+//If you ever see this please add a module to the _packed.reds file pleaaaaaaaaase
+
+@if(ModuleExists("LetThereBeFlight.Compatibility"))
+@wrapMethod(VehicleObject)
+protected func SendQuickhackCommands(shouldOpen: Bool) -> Void {
+  let actions: array<ref<DeviceAction>>;
+  let commands: array<ref<QuickhackData>>;
+  let context: GetActionsContext;
+  let quickSlotsManagerNotification: ref<RevealInteractionWheel> = new RevealInteractionWheel();
+  quickSlotsManagerNotification.lookAtObject = this;
+  quickSlotsManagerNotification.shouldReveal = shouldOpen;
+  if shouldOpen {
+	context = this.GetVehiclePS().GenerateContext(gamedeviceRequestType.Remote, Device.GetInteractionClearance(), this.GetPlayerMainObject(), this.GetEntityID());
+	this.GetVehiclePS().GetRemoteActions(actions, context);
+	
+	//TODO: Remake the actions
+	ArrayPush(actions, ActionFlightEnable(this));
+    ArrayPush(actions, ActionFlightDisable(this));
+    ArrayPush(actions, ActionFlightMalfunction(this));
+    ArrayPush(actions, ActionDisableGravity(this));
+    ArrayPush(actions, ActionEnableGravity(this));
+    ArrayPush(actions, ActionBouncy(this));
+
+	
+	
+	if this.m_isQhackUploadInProgerss {
+	  ScriptableDeviceComponentPS.SetActionsInactiveAll(actions, "LocKey#7020");
+	};
+	this.TranslateActionsIntoQuickSlotCommands(actions, commands);
+	quickSlotsManagerNotification.commands = commands;
+
+	this.GetVehicleComponent().DetermineInteractionState();
+  }
+  HUDManager.SetQHDescriptionVisibility(this.GetGame(), shouldOpen);
+  GameInstance.GetUISystem(this.GetGame()).QueueEvent(quickSlotsManagerNotification);
+}
+
+
+
+
+
+//LOCKEY
+//VehicleSecurityRework version of the TranslateActionsIntoQuickSlotCommands
+@if(!ModuleExists("LetThereBeFlight.Compatibility"))
 @addMethod(VehicleObject)
-  private func TranslateActionsIntoQuickSlotCommands(actions: array<ref<DeviceAction>>, out commands: array<ref<QuickhackData>>) -> Void {
+private func TranslateActionsIntoQuickSlotCommands(actions: array<ref<DeviceAction>>, out commands: array<ref<QuickhackData>>) -> Void {
 	
 	let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGame());
 	let customHackSystem:ref<CustomHackingSystem> = container.Get(n"HackingExtensions.CustomHackingSystem") as CustomHackingSystem;
@@ -717,7 +780,195 @@ protected func SendQuickhackCommands(shouldOpen: Bool) -> Void {
 	QuickhackModule.SortCommandPriority(commands, this.GetGame());
 }
 
+//Hybrid version
+@if(ModuleExists("LetThereBeFlight.Compatibility"))
+@wrapMethod(VehicleObject)
+  private final func TranslateActionsIntoQuickSlotCommands(actions: array<ref<DeviceAction>>, out commands: array<ref<QuickhackData>>) -> Void {
+	let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGame());
+	let customHackSystem:ref<CustomHackingSystem> = container.Get(n"HackingExtensions.CustomHackingSystem") as CustomHackingSystem;
 
+	let actionCompletionEffects: array<wref<ObjectActionEffect_Record>>;
+	let actionMatchDeck: Bool;
+	let actionRecord: wref<ObjectAction_Record>;
+	let actionStartEffects: array<wref<ObjectActionEffect_Record>>;
+	let choice: InteractionChoice;
+	let emptyChoice: InteractionChoice;
+	let i: Int32;
+	let i1: Int32;
+	let newCommand: ref<QuickhackData>;
+	let sAction: ref<ScriptableDeviceAction>;
+	let statModifiers: array<wref<StatModifier_Record>>;
+	let playerRef: ref<PlayerPuppet> = GetPlayer(this.GetGame());
+	let iceLVL: Float = 0.0;
+	let actionOwnerName: CName = StringToName(this.GetDisplayName());
+	let playerQHacksList: array<PlayerQuickhackData> = RPGManager.GetPlayerQuickHackListWithQuality(playerRef);
+
+	let customActionsFound:array<wref<ObjectAction_Record>>;
+	if ArraySize(playerQHacksList) == 0 {
+	  newCommand = new QuickhackData();
+	  newCommand.m_title = "LocKey#42171";
+	  newCommand.m_isLocked = true;
+	  newCommand.m_actionState = EActionInactivityReson.Invalid;
+	  newCommand.m_actionOwnerName = StringToName(this.GetDisplayName());
+	  newCommand.m_description = "LocKey#42172";
+	  ArrayPush(commands, newCommand);
+	}
+	else
+	{
+	  i = 0;
+	while i < ArraySize(playerQHacksList)
+	{
+		newCommand = new QuickhackData();
+		sAction = null;
+		ArrayClear(actionStartEffects);
+		actionRecord = playerQHacksList[i].actionRecord;
+		if NotEquals(actionRecord.ObjectActionType().Type(), gamedataObjectActionType.DeviceQuickHack)
+		{
+		}
+		else 
+		{
+			actionMatchDeck = false;
+		  	i1 = 0;
+		  	while i1 < ArraySize(actions) 
+		  	{
+				sAction = actions[i1] as ScriptableDeviceAction;
+				//LogChannel(n"DEBUG",NameToString(sAction.actionName));
+				if Equals(actionRecord.ActionName(), sAction.GetObjectActionRecord().ActionName())
+				{
+					//LogChannel(n"DEBUG","Matches Wrong Deck");
+					actionMatchDeck = true;
+				  	if actionRecord.Priority() >= sAction.GetObjectActionRecord().Priority()
+					{
+						sAction.SetObjectActionID(playerQHacksList[i].actionRecord.GetID());
+				  	} 
+					else 
+					{
+						actionRecord = sAction.GetObjectActionRecord();
+				  	};
+					newCommand.m_uploadTime = sAction.GetActivationTime();
+					newCommand.m_duration = sAction.GetDurationValue();
+					break;
+				};
+
+				//LogChannel(n"DEBUG","	Checking " + NameToString(sAction.actionName));
+
+				//Added this : finds if the action passed matches the "deck" of CustomHackingSystem (aka : simply the actions registered in the system)
+				//--------------------------------------------------------------------------------
+
+				if customHackSystem.customDeviceActions.KeyExist(NameToString(sAction.actionName)) 
+				&& !ArrayContains(customActionsFound,sAction.GetObjectActionRecord())
+				{
+				  //LogChannel(n"DEBUG","Matches Deck");
+				  actionMatchDeck = true;
+				  actionRecord = sAction.GetObjectActionRecord();
+				  newCommand.m_uploadTime = sAction.GetActivationTime();
+				  newCommand.m_duration = sAction.GetDurationValue();
+				  ArrayPush(customActionsFound,sAction.GetObjectActionRecord());
+				  break;
+				};
+
+				//--------------------------------------------------------------------------------
+
+				i1 += 1;
+		  	};
+
+			newCommand.m_actionOwnerName = actionOwnerName;
+			newCommand.m_title = LocKeyToString(actionRecord.ObjectActionUI().Caption());
+			newCommand.m_description = LocKeyToString(actionRecord.ObjectActionUI().Description());
+			newCommand.m_icon = actionRecord.ObjectActionUI().CaptionIcon().TexturePartID().GetID();
+			newCommand.m_iconCategory = actionRecord.GameplayCategory().IconName();
+			newCommand.m_type = actionRecord.ObjectActionType().Type();
+			newCommand.m_actionOwner = this.GetEntityID();
+			newCommand.m_isInstant = false;
+			newCommand.m_ICELevel = iceLVL;
+			newCommand.m_ICELevelVisible = false;
+			newCommand.m_vulnerabilities = this.GetVehiclePS().GetActiveQuickHackVulnerabilities();
+			newCommand.m_actionState = EActionInactivityReson.Locked;
+			newCommand.m_quality = playerQHacksList[i].quality;
+			newCommand.m_costRaw = BaseScriptableAction.GetBaseCostStatic(playerRef, actionRecord);
+			newCommand.m_category = actionRecord.HackCategory();
+			ArrayClear(actionCompletionEffects);
+			actionRecord.CompletionEffects(actionCompletionEffects);
+			newCommand.m_actionCompletionEffects = actionCompletionEffects;
+			actionRecord.StartEffects(actionStartEffects);
+			i1 = 0;
+
+			while i1 < ArraySize(actionStartEffects) 
+			{
+				if Equals(actionStartEffects[i1].StatusEffect().StatusEffectType().Type(), gamedataStatusEffectType.PlayerCooldown)
+				{
+				  actionStartEffects[i1].StatusEffect().Duration().StatModifiers(statModifiers);
+				  newCommand.m_cooldown = RPGManager.CalculateStatModifiers(statModifiers, this.GetGame(), playerRef, Cast<StatsObjectID>(playerRef.GetEntityID()), Cast<StatsObjectID>(playerRef.GetEntityID()));
+				  newCommand.m_cooldownTweak = actionStartEffects[i1].StatusEffect().GetID();
+				  ArrayClear(statModifiers);
+				};
+				if newCommand.m_cooldown != 0.00 
+				{
+					break;
+				};
+				i1 += 1;
+		  	};
+		  if actionMatchDeck {
+			if !IsDefined(this as GenericDevice) {
+			  choice = emptyChoice;
+			  choice = sAction.GetInteractionChoice();
+			  if TDBID.IsValid(choice.choiceMetaData.tweakDBID) {
+				newCommand.m_titleAlternative = LocKeyToString(TweakDBInterface.GetInteractionBaseRecord(choice.choiceMetaData.tweakDBID).Caption());
+			  };
+			};
+			newCommand.m_cost = sAction.GetCost();
+			if sAction.IsInactive() {
+			  newCommand.m_isLocked = true;
+			  newCommand.m_inactiveReason = sAction.GetInactiveReason();
+			  if this.HasActiveQuickHackUpload() {
+				newCommand.m_action = sAction;
+			  };
+			} else {
+			  if !sAction.CanPayCost() {
+				newCommand.m_actionState = EActionInactivityReson.OutOfMemory;
+				newCommand.m_isLocked = true;
+				newCommand.m_inactiveReason = "LocKey#27398";
+			  };
+			  if GameInstance.GetStatPoolsSystem(this.GetGame()).HasActiveStatPool(Cast<StatsObjectID>(this.GetEntityID()), gamedataStatPoolType.QuickHackUpload) {
+				newCommand.m_isLocked = true;
+				newCommand.m_inactiveReason = "LocKey#27398";
+			  };
+			  if !sAction.IsInactive() || this.HasActiveQuickHackUpload() {
+				newCommand.m_action = sAction;
+			  };
+			};
+		  } else {
+			newCommand.m_isLocked = true;
+			newCommand.m_inactiveReason = "LocKey#10943";
+		  };
+		  newCommand.m_actionMatchesTarget = actionMatchDeck;
+		  if !newCommand.m_isLocked {
+			newCommand.m_actionState = EActionInactivityReson.Ready;
+		  };
+		  ArrayPush(commands, newCommand);
+		};
+		i += 1;
+	  };
+	};
+	i = 0;
+	while i < ArraySize(commands) {
+	  if commands[i].m_isLocked && IsDefined(commands[i].m_action) {
+		(commands[i].m_action as ScriptableDeviceAction).SetInactiveWithReason(false, commands[i].m_inactiveReason);
+	  };
+	  i += 1;
+	};
+	QuickhackModule.SortCommandPriority(commands, this.GetGame());
+}
+
+
+
+
+
+
+
+
+//LOCKEY
+@if(!ModuleExists("LetThereBeFlight.Compatibility"))
 @addMethod(VehicleObject)
   protected cb func OnUploadProgressStateChanged(evt: ref<UploadProgramProgressEvent>) -> Bool {
     if Equals(evt.progressBarContext, EProgressBarContext.QuickHack) {
