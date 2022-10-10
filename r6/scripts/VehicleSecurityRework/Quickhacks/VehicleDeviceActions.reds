@@ -65,7 +65,7 @@ private final const func ActionUnlockSecurity(minigameDef:TweakDBID) -> ref<Unlo
 	let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
 	let customHackSystem: ref<CustomHackingSystem> = container.Get(n"HackingExtensions.CustomHackingSystem") as CustomHackingSystem;
 	customHackSystem.RegisterDeviceAction(action);
-	action.CreateInteraction();
+
 
 	return action;
 }
