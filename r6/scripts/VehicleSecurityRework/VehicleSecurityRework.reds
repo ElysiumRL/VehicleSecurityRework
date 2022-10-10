@@ -86,6 +86,53 @@ public class VehicleSecurityRework extends ScriptableSystem
   	@runtimeProperty("ModSettings.min", "0")
   	@runtimeProperty("ModSettings.max", "5")
 	public let vehiclesToSpawnVeryHard:Int32 = 3;
+	
+	// Quickhacks (Default)
+
+	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+	@runtimeProperty("ModSettings.category","Quickhacks - Default")
+	@runtimeProperty("ModSettings.displayName","Distraction")
+	@runtimeProperty("ModSettings.description","Click to toggle this Quickhack")
+	public let distractHack:Bool = true;
+	
+	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+	@runtimeProperty("ModSettings.category","Quickhacks - Default")
+	@runtimeProperty("ModSettings.displayName","Force Brakes")
+	@runtimeProperty("ModSettings.description","Click to toggle this Quickhack")
+	public let forceBrakesHack:Bool = true;
+
+	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+	@runtimeProperty("ModSettings.category","Quickhacks - Default")
+	@runtimeProperty("ModSettings.displayName","Reckless Driving")
+	@runtimeProperty("ModSettings.description","Click to toggle this Quickhack")
+	public let recklessDrivingHack:Bool = true;
+	
+	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+	@runtimeProperty("ModSettings.category","Quickhacks - Default")
+	@runtimeProperty("ModSettings.displayName","Explode")
+	@runtimeProperty("ModSettings.description","Click to toggle this Quickhack")
+	public let explodeHack:Bool = true;
+
+	// Quickhacks (LTBF)
+
+	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+	@runtimeProperty("ModSettings.category","Quickhacks - Let There Be Flight")
+	@runtimeProperty("ModSettings.displayName","Toggle Flight Mode")
+	@runtimeProperty("ModSettings.description","Click to toggle this Quickhack (Requires Let There Be Flight mod)")
+	public let toggleFlightHack:Bool = true;
+	
+	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+	@runtimeProperty("ModSettings.category","Quickhacks - Let There Be Flight")
+	@runtimeProperty("ModSettings.displayName","Toggle Gravity")
+	@runtimeProperty("ModSettings.description","Click to toggle this Quickhack (Requires Let There Be Flight mod)")
+	public let toggleGravityHack:Bool = true;
+
+	@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+	@runtimeProperty("ModSettings.category","Quickhacks - Let There Be Flight")
+	@runtimeProperty("ModSettings.displayName","Liftoff!")
+	@runtimeProperty("ModSettings.description","Click to toggle this Quickhack (Requires Let There Be Flight mod)")
+	public let liftoffHack:Bool = true;
+
 
 	private func OnAttach() -> Void
 	{

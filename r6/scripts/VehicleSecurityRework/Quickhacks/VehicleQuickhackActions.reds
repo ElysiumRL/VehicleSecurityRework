@@ -12,6 +12,10 @@ protected func GetQuickHackActions(out actions: array<ref<DeviceAction>>, contex
 {
 	let action: ref<ScriptableDeviceAction>;
 	
+	let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
+	let params:ref<VehicleSecurityRework> = container.Get(n"VehicleSecurityRework.Base.VehicleSecurityRework") as VehicleSecurityRework;
+
+
 	//Remote Breach
 	action = this.ActionUnlockSecurity(GetVehicleHackDBDifficulty(this));
 	if IsVehicleSecurityHardened(this)
@@ -43,48 +47,60 @@ protected func GetQuickHackActions(out actions: array<ref<DeviceAction>>, contex
 	ArrayPush(actions,action);
 
 	//Explode
-	action = this.ActionOverloadVehicle();
-	if !IsVehicleSecurityBreached(this)
+	if (params.explodeHack)
 	{
-		action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		action = this.ActionOverloadVehicle();
+		if !IsVehicleSecurityBreached(this)
+		{
+			action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		}
+		ArrayPush(actions,action);
 	}
-	ArrayPush(actions,action);
 
 	//Distract
-	action = this.ActionVehicleDistraction();
-	if !IsVehicleSecurityBreached(this)
+	if(params.distractHack)
 	{
-		action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		action = this.ActionVehicleDistraction();
+		if !IsVehicleSecurityBreached(this)
+		{
+			action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		}
+		if this.m_distractExecuted
+		{
+			action.SetInactiveWithReason(false, "LocKey#7004");	
+		}	
+		ArrayPush(actions,action);
 	}
-	if this.m_distractExecuted
-	{
-		action.SetInactiveWithReason(false, "LocKey#7004");	
-	}	
-	ArrayPush(actions,action);
 
 	//Force Brakes
-	action = this.ActionVehicleForceBrakes();
-	if !IsVehicleSecurityBreached(this)
+	if(params.forceBrakesHack)
 	{
-		action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		action = this.ActionVehicleForceBrakes();
+		if !IsVehicleSecurityBreached(this)
+		{
+			action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		}
+		if this.quickhackForceBrakesExecuted
+		{
+			action.SetInactiveWithReason(false, "LocKey#7004");	
+		}
+		ArrayPush(actions,action);
 	}
-	if this.quickhackForceBrakesExecuted
+
+	//Reckless Driving
+	if(params.recklessDrivingHack)
 	{
-		action.SetInactiveWithReason(false, "LocKey#7004");	
+		action = this.ActionVehicleRecklessDriving();
+		if !IsVehicleSecurityBreached(this)
+		{
+			action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		}
+		if this.quickhackRecklessDrivingExecuted || this.m_isGlitching || this.quickhackForceBrakesExecuted
+		{
+			action.SetInactiveWithReason(false, "LocKey#7004");	
+		}
+		ArrayPush(actions,action);
 	}
-	ArrayPush(actions,action);
-	
-	//Force Throttle
-	action = this.ActionVehicleRecklessDriving();
-	if !IsVehicleSecurityBreached(this)
-	{
-		action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
-	}
-	if this.quickhackRecklessDrivingExecuted || this.m_isGlitching || this.quickhackForceBrakesExecuted
-	{
-		action.SetInactiveWithReason(false, "LocKey#7004");	
-	}
-	ArrayPush(actions,action);
 
 
 	if this.quickhackRecklessDrivingExecuted || this.m_isGlitching || this.quickhackForceBrakesExecuted
@@ -109,6 +125,10 @@ protected func GetQuickHackActions(out actions: array<ref<DeviceAction>>, contex
 {
 	let action: ref<ScriptableDeviceAction>;
 	
+	let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
+	let params:ref<VehicleSecurityRework> = container.Get(n"VehicleSecurityRework.Base.VehicleSecurityRework") as VehicleSecurityRework;
+
+
 	//Remote Breach
 	action = this.ActionUnlockSecurity(GetVehicleHackDBDifficulty(this));
 	if IsVehicleSecurityHardened(this)
@@ -140,100 +160,119 @@ protected func GetQuickHackActions(out actions: array<ref<DeviceAction>>, contex
 	ArrayPush(actions,action);
 
 	//Explode
-	action = this.ActionOverloadVehicle();
-	if !IsVehicleSecurityBreached(this)
+	if(params.explodeHack)
 	{
-		action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		action = this.ActionOverloadVehicle();
+		if !IsVehicleSecurityBreached(this)
+		{
+			action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		}
+		ArrayPush(actions,action);
 	}
-	ArrayPush(actions,action);
 
 	//Distract
-	action = this.ActionVehicleDistraction();
-	if !IsVehicleSecurityBreached(this)
+	if(params.distractHack)
 	{
-		action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		action = this.ActionVehicleDistraction();
+		if !IsVehicleSecurityBreached(this)
+		{
+			action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		}
+		if this.m_distractExecuted
+		{
+			action.SetInactiveWithReason(false, "LocKey#7004");	
+		}	
+		ArrayPush(actions,action);
 	}
-	if this.m_distractExecuted
-	{
-		action.SetInactiveWithReason(false, "LocKey#7004");	
-	}	
-	ArrayPush(actions,action);
 
 	//Force Brakes
-	action = this.ActionVehicleForceBrakes();
-	if !IsVehicleSecurityBreached(this)
+	if(params.forceBrakesHack)
 	{
-		action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		action = this.ActionVehicleForceBrakes();
+		if !IsVehicleSecurityBreached(this)
+		{
+			action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		}
+		if this.quickhackForceBrakesExecuted
+		{
+			action.SetInactiveWithReason(false, "LocKey#7004");	
+		}
+		ArrayPush(actions,action);
 	}
-	if this.quickhackForceBrakesExecuted
+
+	//Reckless Driving
+	if(params.recklessDrivingHack)
 	{
-		action.SetInactiveWithReason(false, "LocKey#7004");	
+		action = this.ActionVehicleRecklessDriving();
+		if !IsVehicleSecurityBreached(this)
+		{
+			action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		}
+		if this.quickhackRecklessDrivingExecuted || this.m_isGlitching || this.quickhackForceBrakesExecuted
+		{
+			action.SetInactiveWithReason(false, "LocKey#7004");	
+		}
+		ArrayPush(actions,action);
 	}
-	ArrayPush(actions,action);
-	
-	//Force Throttle
-	action = this.ActionVehicleRecklessDriving();
-	if !IsVehicleSecurityBreached(this)
-	{
-		action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
-	}
-	if this.quickhackRecklessDrivingExecuted || this.m_isGlitching || this.quickhackForceBrakesExecuted
-	{
-		action.SetInactiveWithReason(false, "LocKey#7004");	
-	}
-	ArrayPush(actions,action);
 
 	/* Let There Be Flight Quickhacks */
 
 	//Toggle FlightMode
-	if this.GetOwnerEntity().m_flightComponent.active
+	if(params.toggleFlightHack)
 	{
-		action = this.ActionVehicleToggleFlightOFF();
-	}
-	else
-	{
-		action = this.ActionVehicleToggleFlightON();
-	}
+		if this.GetOwnerEntity().m_flightComponent.active
+		{
+			action = this.ActionVehicleToggleFlightOFF();
+		}
+		else
+		{
+			action = this.ActionVehicleToggleFlightON();
+		}
 
-	if !IsVehicleSecurityBreached(this)
-	{
-		action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		if !IsVehicleSecurityBreached(this)
+		{
+			action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		}
+		if this.quickhackRecklessDrivingExecuted || this.m_isGlitching || this.quickhackForceBrakesExecuted
+		{
+			action.SetInactiveWithReason(false, "LocKey#7004");	
+		}
+		ArrayPush(actions,action);
 	}
-	if this.quickhackRecklessDrivingExecuted || this.m_isGlitching || this.quickhackForceBrakesExecuted
-	{
-		action.SetInactiveWithReason(false, "LocKey#7004");	
-	}
-	ArrayPush(actions,action);
-
 
 	//Toggle Gravity
-	if this.GetOwnerEntity().HasGravity()
+	if(params.toggleGravityHack)
 	{
-		action = this.ActionVehicleToggleGravityOFF();
-	}
-	else
-	{
-		action = this.ActionVehicleToggleGravityON();
-	}
+		if this.GetOwnerEntity().HasGravity()
+		{
+			action = this.ActionVehicleToggleGravityOFF();
+		}
+		else
+		{
+			action = this.ActionVehicleToggleGravityON();
+		}
 
-	if !IsVehicleSecurityBreached(this)
-	{
-		action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		if !IsVehicleSecurityBreached(this)
+		{
+			action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		}
+		if this.quickhackRecklessDrivingExecuted || this.m_isGlitching || this.quickhackForceBrakesExecuted
+		{
+			action.SetInactiveWithReason(false, "LocKey#7004");	
+		}
+		ArrayPush(actions,action);
 	}
-	if this.quickhackRecklessDrivingExecuted || this.m_isGlitching || this.quickhackForceBrakesExecuted
-	{
-		action.SetInactiveWithReason(false, "LocKey#7004");	
-	}
-	ArrayPush(actions,action);
 
 	//Liftoff
-	action = this.ActionVehicleLiftoff();
-	if !IsVehicleSecurityBreached(this)
+	if(params.liftoffHack)
 	{
-		action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		action = this.ActionVehicleLiftoff();
+		if !IsVehicleSecurityBreached(this)
+		{
+			action.SetInactiveWithReason(false, LocKeyToString(n"VehicleSecurityRework-Quickhack-SecurityEnabledPanelInfo"));
+		}
+		ArrayPush(actions,action);
 	}
-	ArrayPush(actions,action);
-
 	/* Let There Be Flight Quickhacks End */
 
 
