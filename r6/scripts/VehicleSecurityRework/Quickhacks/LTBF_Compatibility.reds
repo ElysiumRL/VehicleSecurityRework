@@ -1,5 +1,4 @@
-//In order to enable compatibility with Let There Be Flight mod, uncomment the line below (simply remove the "//"),save and load the game (Don't forget to re-comment it if you remove Let There Be Flight !!!)
-//module LetThereBeFlight.Compatibility
+module LetThereBeFlight.Compatibility
 
 import HackingExtensions.*
 import CustomHackingSystem.Tools.*
@@ -13,7 +12,7 @@ public class LTBF_ToggleFlightON extends ActionBool
 	}
 }
 
-@if(ModuleExists("LetThereBeFlight.Compatibility"))
+@if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
 private final const func ActionVehicleToggleFlightON() -> ref<LTBF_ToggleFlightON> 
 {
@@ -30,7 +29,7 @@ private final const func ActionVehicleToggleFlightON() -> ref<LTBF_ToggleFlightO
 	return action;
 }
 
-@if(ModuleExists("LetThereBeFlight.Compatibility"))
+@if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
 protected cb func OnActionVehicleToggleFlightON(evt:ref<LTBF_ToggleFlightON>) -> EntityNotificationType 
 {
@@ -51,7 +50,7 @@ public class LTBF_ToggleGravityON extends ActionBool
 	}
 }
 
-@if(ModuleExists("LetThereBeFlight.Compatibility"))
+@if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
 private final const func ActionVehicleToggleGravityON() -> ref<LTBF_ToggleGravityON> 
 {
@@ -68,7 +67,7 @@ private final const func ActionVehicleToggleGravityON() -> ref<LTBF_ToggleGravit
 	return action;
 }
 
-@if(ModuleExists("LetThereBeFlight.Compatibility"))
+@if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
 protected cb func OnVehicleToggleGravityON(evt:ref<LTBF_ToggleGravityON>) -> EntityNotificationType 
 {
@@ -89,7 +88,7 @@ public class LTBF_ToggleFlightOFF extends ActionBool
 	}
 }
 
-@if(ModuleExists("LetThereBeFlight.Compatibility"))
+@if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
 private final const func ActionVehicleToggleFlightOFF() -> ref<LTBF_ToggleFlightOFF> 
 {
@@ -106,7 +105,7 @@ private final const func ActionVehicleToggleFlightOFF() -> ref<LTBF_ToggleFlight
 	return action;
 }
 
-@if(ModuleExists("LetThereBeFlight.Compatibility"))
+@if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
 protected cb func OnActionVehicleToggleFlightOFF(evt:ref<LTBF_ToggleFlightOFF>) -> EntityNotificationType 
 {
@@ -127,7 +126,7 @@ public class LTBF_ToggleGravityOFF extends ActionBool
 	}
 }
 
-@if(ModuleExists("LetThereBeFlight.Compatibility"))
+@if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
 private final const func ActionVehicleToggleGravityOFF() -> ref<LTBF_ToggleGravityOFF> 
 {
@@ -144,7 +143,7 @@ private final const func ActionVehicleToggleGravityOFF() -> ref<LTBF_ToggleGravi
 	return action;
 }
 
-@if(ModuleExists("LetThereBeFlight.Compatibility"))
+@if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
 protected cb func OnActionVehicleToggleGravityOFF(evt:ref<LTBF_ToggleGravityOFF>) -> EntityNotificationType 
 {
@@ -166,7 +165,7 @@ public class LTBF_Liftoff extends ActionBool
 	}
 }
 
-@if(ModuleExists("LetThereBeFlight.Compatibility"))
+@if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
 private final const func ActionVehicleLiftoff() -> ref<LTBF_Liftoff> 
 {
@@ -183,7 +182,7 @@ private final const func ActionVehicleLiftoff() -> ref<LTBF_Liftoff>
 	return action;
 }
 
-@if(ModuleExists("LetThereBeFlight.Compatibility"))
+@if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
 protected cb func OnActionVehicleLiftoff(evt:ref<LTBF_Liftoff>) -> EntityNotificationType 
 {

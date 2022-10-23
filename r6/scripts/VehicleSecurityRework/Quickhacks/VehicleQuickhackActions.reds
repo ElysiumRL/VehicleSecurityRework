@@ -1,12 +1,14 @@
 module VehicleSecurityRework.Base
 import VehicleSecurityRework.Hack.*
 
+@if(ModuleExists("LetThereBeFlight"))
+import LetThereBeFlight.*
+
 @if(ModuleExists("LetThereBeFlight.Compatibility"))
 import LetThereBeFlight.Compatibility.*
 
-
 //Get all quickhacks for the vehicle - VehicleSecurityRework version
-@if(!ModuleExists("LetThereBeFlight.Compatibility"))
+@if(!ModuleExists("LetThereBeFlight"))
 @replaceMethod(VehicleComponentPS)
 protected func GetQuickHackActions(out actions: array<ref<DeviceAction>>, context: GetActionsContext) -> Void 
 {
@@ -119,7 +121,7 @@ protected func GetQuickHackActions(out actions: array<ref<DeviceAction>>, contex
 
 
 //Get all quickhacks for the vehicle - VehicleSecurityRework x LTBF (hybrid) version
-@if(ModuleExists("LetThereBeFlight.Compatibility"))
+@if(ModuleExists("LetThereBeFlight"))
 @replaceMethod(VehicleComponentPS)
 protected func GetQuickHackActions(out actions: array<ref<DeviceAction>>, context: GetActionsContext) -> Void 
 {

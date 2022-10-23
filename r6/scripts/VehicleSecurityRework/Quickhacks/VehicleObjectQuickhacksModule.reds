@@ -3,14 +3,18 @@ module VehicleSecurityRework.Quickhack
 import HackingExtensions.*
 import CustomHackingSystem.Tools.*
 
+
+//This is useless since for now there's nothing in the module but if something gets added one day... we never know
+@if(ModuleExists("LetThereBeFlight"))
+import LetThereBeFlight.*
+
 @if(ModuleExists("LetThereBeFlight.Compatibility"))
 import LetThereBeFlight.Compatibility.*
-
 
 /*
 	Module used to setup the quickhack functionalities for vehicles
 
-	99.99% of these functions have been a stupid copy/paste from Device/InteractiveDevice/VendingMachineControllerPS/VendingMachine (and many more)
+	99.99% of these functions have been a stupid copy/paste from Device/InteractiveDevice/VendingMachineControllerPS/VendingMachine (and many more devices)
 	Some of these functions are not needed (and can be removed) but i forgot which one to remove ...
 */
 
@@ -23,23 +27,22 @@ protected const func ShouldRegisterToHUD() -> Bool
 	}
 	return wrappedMethod();
 }
-@if(!ModuleExists("LetThereBeFlight.Compatibility"))
+
+@if(!ModuleExists("LetThereBeFlight"))
 @replaceMethod(VehicleObject)
 public const func CanRevealRemoteActionsWheel() -> Bool
 {
 	return true;
 }
 
-//LOCKEY
-@if(!ModuleExists("LetThereBeFlight.Compatibility"))
+@if(!ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleObject)
 public const func IsQuickHackAble() -> Bool
 {
 	return true;
 }
 
-//LOCKEY
-@if(!ModuleExists("LetThereBeFlight.Compatibility"))
+@if(!ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleObject)
 public const func IsQuickHacksExposed() -> Bool
 {
@@ -74,14 +77,20 @@ protected func ExecuteBaseActionOperation(actionClassName: CName) -> Void
 		ps.GetDeviceOperationsContainer().EvaluateDeviceActionTriggers(actionClassName, this);
 	};
 }
+
+//Returns true if there is a quickhack for the vehicle.
+//The way CDPR does it though is ... weird but I guess it works
 @addMethod(VehicleObject)
-  public const func HasActiveQuickHackUpload() -> Bool {
-    if IsDefined(this.m_gameplayRoleComponent) {
-      return this.m_gameplayRoleComponent.HasActiveMappin(gamedataMappinVariant.QuickHackVariant);
+public const func HasActiveQuickHackUpload() -> Bool 
+{
+    if IsDefined(this.m_gameplayRoleComponent)
+	{
+    	return this.m_gameplayRoleComponent.HasActiveMappin(gamedataMappinVariant.QuickHackVariant);
     };
     return false;
-  }
+}
 
+//UNKNOWN
 @addMethod(VehicleObject)
 protected cb func OnPerformedAction(evt: ref<PerformedAction>) -> Bool 
 {
@@ -105,12 +114,15 @@ protected cb func OnPerformedAction(evt: ref<PerformedAction>) -> Bool
   	this.ResolveQuestImportanceOnPerformedAction(action);
 }
 
+//UNKNOWN
 @addMethod(VehicleObject)
-protected cb func OnQuickHackPanelStateChanged(evt: ref<QuickHackPanelStateEvent>) -> Bool {
-  this.DetermineInteractionStateByTask();
+protected cb func OnQuickHackPanelStateChanged(evt: ref<QuickHackPanelStateEvent>) -> Bool 
+{
+	this.DetermineInteractionStateByTask();
 }
 
-
+//This function will try to find all "remote" actions possible, it's a thing you definetly don't want to touch unless you know what you're doing
+//In our case it is used as an intermediate to resolve quickhacks
 @addMethod(VehicleObject)
 private final func ResolveRemoteActions(state: Bool) -> Void {
   let context: GetActionsContext = this.GetVehiclePS().GenerateContext(gamedeviceRequestType.Remote, Device.GetInteractionClearance(), this.GetPlayerMainObject(), this.GetEntityID());
@@ -128,6 +140,7 @@ private final func ResolveRemoteActions(state: Bool) -> Void {
 }
 
 
+//UNKNOWN
 @addMethod(VehicleObject)
 protected func NotifyConnectionHighlightSystem(IsHighlightON: Bool, IsNotifiedByMasterDevice: Bool) -> Bool {
   let hightlightSystemRequest: ref<HighlightConnectionsRequest>;
@@ -144,11 +157,13 @@ protected func NotifyConnectionHighlightSystem(IsHighlightON: Bool, IsNotifiedBy
   return true;
 }
 
+//UNKNOWN
 @addMethod(VehicleObject)
 private final func GetDeviceConnectionsHighlightSystem() -> ref<DeviceConnectionsHighlightSystem> {
   return GameInstance.GetScriptableSystemsContainer(this.GetGame()).Get(n"DeviceConnectionsHighlightSystem") as DeviceConnectionsHighlightSystem;
 }
 
+//UNKNOWN
 @addMethod(VehicleObject)
 protected final func DetermineInteractionStateByTask(opt context: GetActionsContext) -> Void {
   let taskData: ref<DetermineInteractionStateTaskData>;
@@ -159,15 +174,16 @@ protected final func DetermineInteractionStateByTask(opt context: GetActionsCont
   GameInstance.GetDelaySystem(this.GetGame()).QueueTask(this, taskData, n"DetermineInteractionStateTask", gameScriptTaskExecutionStage.Any);
 }
 
-//LOCKEY
-@if(!ModuleExists("LetThereBeFlight.Compatibility"))
+//UNKNOWN
+//Called when you started a hack
+@if(!ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleObject)
 protected cb func OnQuickSlotCommandUsed(evt: ref<QuickSlotCommandUsed>) -> Bool {
   this.ExecuteAction(evt.action, GameInstance.GetPlayerSystem(this.GetGame()).GetLocalPlayerControlledGameObject());
 }
 
-//LOCKEY
-@if(!ModuleExists("LetThereBeFlight.Compatibility"))
+//UNKNOWN
+@if(!ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleObject)
 protected final const func ExecuteAction(action: ref<DeviceAction>, opt executor: wref<GameObject>) -> Bool {
   let sAction: ref<ScriptableDeviceAction> = action as ScriptableDeviceAction;
@@ -183,7 +199,8 @@ protected final const func ExecuteAction(action: ref<DeviceAction>, opt executor
 }
 
 
-
+//UNKNOWN
+//Quest-related actions, shouldn't matter too much
 @addMethod(VehicleObject)
   private final func ResolveQuestImportanceOnPerformedAction(action: ref<ScriptableDeviceAction>) -> Void {
 	let authOffAction: ref<SetAuthorizationModuleOFF>;
@@ -209,36 +226,48 @@ protected final const func ExecuteAction(action: ref<DeviceAction>, opt executor
 	  };
 	};
   }
+
+
+//Returns true if any skill check is active (e.g : force unlock)
 @addMethod(VehicleObject)
-  public final const func HasAnySkillCheckActive() -> Bool {
+public final const func HasAnySkillCheckActive() -> Bool 
+{
 	return this.GetVehiclePS().IsHackingSkillCheckActive() || this.GetVehiclePS().IsDemolitionSkillCheckActive() || this.GetVehiclePS().IsEngineeringSkillCheckActive();
-  }
+}
 
+
+//UNKNOWN
 
 @addMethod(VehicleObject)
-  protected func ResolveIllegalAction(executor: ref<GameObject>, duration: Float) -> Void {
+protected func ResolveIllegalAction(executor: ref<GameObject>, duration: Float) -> Void 
+{
 	let broadcaster: ref<StimBroadcasterComponent>;
 	let stimData: stimInvestigateData;
-	if IsDefined(executor) {
+	if IsDefined(executor) 
+	{
 	  broadcaster = executor.GetStimBroadcasterComponent();
-	  if IsDefined(broadcaster) {
+	  if IsDefined(broadcaster) 
+	  {
 		stimData.fearPhase = -1;
 		broadcaster.TriggerSingleBroadcast(this, gamedataStimType.IllegalAction, 15.00, stimData);
 	  };
 	};
-  }
+}
+//UNKNOWN
 
 @addMethod(VehicleObject)
   protected final const func IsConnectedToActionsSequencer() -> Bool {
 	return this.GetVehiclePS().IsConnectedToActionsSequencer();
   }
+//UNKNOWN
 
 @addMethod(VehicleObject)
   protected final const func IsLockedViaSequencer() -> Bool {
 	return this.GetVehiclePS().IsLockedViaSequencer();
   }
 
-
+//UNKNOWN
+//Probably needed by the Distraction Quickhacks
 @addMethod(VehicleObject)
   protected final func TriggerAreaEffectDistractionByAction(action: ref<ScriptableDeviceAction>) -> Void {
 	let effectData: ref<AreaEffectData>;
@@ -253,6 +282,8 @@ protected final const func ExecuteAction(action: ref<DeviceAction>, opt executor
 	};
   }
 
+//UNKNOWN
+//Probably needed by the Distraction Quickhacks
 @addMethod(VehicleObject)
   protected final func TriggerArreaEffectDistraction(effectData: ref<AreaEffectData>, opt executor: ref<GameObject>) -> Void {
 	let broadcaster: ref<StimBroadcasterComponent>;
@@ -305,22 +336,31 @@ protected final const func ExecuteAction(action: ref<DeviceAction>, opt executor
 	  };
 	};
   }
+
+//UNKNOWN
+//Probably removable
 @addMethod(VehicleObject)
   public final func GetEntityFromNode(nodeRef: NodeRef) -> ref<Entity> {
 	let id: EntityID = Cast<EntityID>(ResolveNodeRefWithEntityID(nodeRef, this.GetEntityID()));
 	return GameInstance.FindEntityByID(this.GetGame(), id);
   }
 
+//UNKNOWN
+//This has to be the most useless function ever created by CDPR
 @addMethod(VehicleObject)
   public func GetStimTarget() -> ref<GameObject> {
 	return this;
   }
 
+//UNKNOWN
+//Probably useless
 @addMethod(VehicleObject)
   public func GetDistractionControllerSource(opt effectData: ref<AreaEffectData>) -> ref<Entity> {
 	return this.GetEntityFromNode(effectData.controllerSource);
   }
 
+//UNKNOWN
+//Probably needed by the mappins or the distraction quickhack
 @addMethod(VehicleObject)
   public final func GetDistractionPointPosition(device: wref<GameObject>) -> Vector4 {
 	let objectTransform: WorldTransform;
@@ -332,6 +372,8 @@ protected final const func ExecuteAction(action: ref<DeviceAction>, opt executor
 	};
 	return device.GetWorldPosition();
   }
+
+//Components
 
 @addField(VehicleObject)
 public let m_effectVisualization:ref<AreaEffectVisualizationComponent>;
@@ -345,6 +387,14 @@ protected let m_gameplayRoleComponent: ref<GameplayRoleComponent>;
 @addField(VehicleObject)
 protected let m_interaction: ref<InteractionComponent>;
 
+@addField(VehicleObject)
+protected let m_fxResourceMapper: ref<FxResourceMapperComponent>;
+
+@addField(VehicleObject)
+private let m_slotComponent: ref<SlotComponent>;
+
+//Requirements of components - this is VERY important to get the visual quickhack feedback
+//Some of them might not be needed
 @wrapMethod(VehicleObject)
 protected cb func OnTakeControl(ri: EntityResolveComponentsInterface) -> Bool
 {
@@ -358,13 +408,16 @@ protected cb func OnTakeControl(ri: EntityResolveComponentsInterface) -> Bool
     this.m_uiComponent = EntityResolveComponentsInterface.GetComponent(ri, n"ui") as worlduiWidgetComponent;
     this.m_interaction = EntityResolveComponentsInterface.GetComponent(ri, n"interaction") as InteractionComponent;
 	
-
 	wrappedMethod(ri);
 
 }
 
+//For some reasons, in order to get a component, you need to request it beforehand... why ? idk
+//For even more unknown reasons, in this precise case, in order to get the component, you need to set it as mandatory
+//It's something they almost never do, but here you have to otherwise it doesn't get the component
 @wrapMethod(VehicleObject)
-  protected cb func OnRequestComponents(ri: EntityRequestComponentsInterface) -> Bool {
+protected cb func OnRequestComponents(ri: EntityRequestComponentsInterface) -> Bool 
+{
     super.OnRequestComponents(ri);
 	EntityRequestComponentsInterface.RequestComponent(ri, n"FxResourceMapper", n"FxResourceMapperComponent", true);
 	EntityRequestComponentsInterface.RequestComponent(ri, n"AreaEffectVisualization", n"AreaEffectVisualizationComponent", true);
@@ -375,21 +428,17 @@ protected cb func OnTakeControl(ri: EntityResolveComponentsInterface) -> Bool
     EntityRequestComponentsInterface.RequestComponent(ri, n"interaction", n"gameinteractionsComponent", true);
 
 	wrappedMethod(ri);
-  }
+}
 
-
-@addField(VehicleObject)
-protected let m_fxResourceMapper: ref<FxResourceMapperComponent>;
-
+//Returns the FX Resource Mapper
 @addMethod(VehicleObject)
-  public final const func GetFxResourceMapper() -> ref<FxResourceMapperComponent> {
+public final const func GetFxResourceMapper() -> ref<FxResourceMapperComponent> 
+{
 	return this.m_fxResourceMapper;
-  }
-
-@addField(VehicleObject)
-private let m_slotComponent: ref<SlotComponent>;
+}
 
 
+//UNKNOWN
 @addMethod(VehicleObject)
   public final const func GetNodePosition(opt nodeRef: NodeRef) -> array<Vector4> {
 	let globalRef: GlobalNodeRef;
@@ -459,6 +508,7 @@ private let m_slotComponent: ref<SlotComponent>;
 	return positionsArray;
   }
 
+//UNKNOWN
 @addMethod(VehicleObject)
   public const func CheckQueryStartPoint(transform: WorldTransform) -> Vector4 {
 	let point: Vector4 = WorldPosition.ToVector4(WorldTransform.GetWorldPosition(transform));
@@ -469,12 +519,13 @@ private let m_slotComponent: ref<SlotComponent>;
   }
 
 
-
+//Returns the Slot Component
 @addMethod(VehicleObject)
   public final const func GetSlotComponent() -> ref<SlotComponent> {
 	return this.m_slotComponent;
   }
 
+//Event called by the HUD system to open quickhack panel (and set currently scannned object as focused)
 @addMethod(VehicleObject)
   protected cb func OnHUDInstruction(evt: ref<HUDInstruction>) -> Bool {
 	super.OnHUDInstruction(evt);
@@ -493,6 +544,7 @@ private let m_slotComponent: ref<SlotComponent>;
 	return true;
   }
 
+// Called by the HUD Instruction event to evaluate current object focus
 @addMethod(VehicleObject)
 private final func ResolveDeviceOperationOnFocusMode(visionType: gameVisionModeType, activated: Bool) -> Void {
   let operationType: ETriggerOperationType;
@@ -511,14 +563,16 @@ private final func ResolveDeviceOperationOnFocusMode(visionType: gameVisionModeT
   };
 }
 
-//LOCKEY
-@if(!ModuleExists("LetThereBeFlight.Compatibility"))
+
+//Returns true if you want to show quickhack panel
+@if(!ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleObject)
 public const func CanRevealRemoteActionsWheel() -> Bool
 {
 	return !this.GetVehiclePS().GetHasExploded();
 }
 
+//Returns player puppet
 @addMethod(VehicleObject)
 public const func GetPlayerMainObject() -> ref<PlayerPuppet>
 {
@@ -528,8 +582,15 @@ public const func GetPlayerMainObject() -> ref<PlayerPuppet>
 @addField(VehicleObject)
 protected let m_isQhackUploadInProgerss:Bool;
 
-//LOCKEY
-@if(!ModuleExists("LetThereBeFlight.Compatibility"))
+//this is super important :
+//Send Quickhack Commands is here to .. send the quickhack commands....
+//This function will do almost everything : from asking to open the quickhack panel, to retrieve the quickhacks, 
+//to make them visible in the panel and possibly a bit more
+// NOTE : DONT PUT YOUR QUICKHACKS HERE, this is NOT the function to do it.
+// If you want to add your quickhacks, there is a function called GetQuickHackActions (called by the GetRemoteActions) that has been
+// made for this specific reasons (same for all devices too), Furthermore the GetQuickHackActions can be wrapped (so better for compatibility)
+
+@if(!ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleObject)
 protected func SendQuickhackCommands(shouldOpen: Bool) -> Void {
   let actions: array<ref<DeviceAction>>;
@@ -542,6 +603,7 @@ protected func SendQuickhackCommands(shouldOpen: Bool) -> Void {
 	context = this.GetVehiclePS().GenerateContext(gamedeviceRequestType.Remote, Device.GetInteractionClearance(), this.GetPlayerMainObject(), this.GetEntityID());
 	this.GetVehiclePS().GetRemoteActions(actions, context);
 	if this.m_isQhackUploadInProgerss {
+		//LocKey7020 : Quickhack is being Uploaded (or something close to it)
 	  ScriptableDeviceComponentPS.SetActionsInactiveAll(actions, "LocKey#7020");
 	};
 	this.TranslateActionsIntoQuickSlotCommands(actions, commands);
@@ -553,13 +615,10 @@ protected func SendQuickhackCommands(shouldOpen: Bool) -> Void {
   GameInstance.GetUISystem(this.GetGame()).QueueEvent(quickSlotsManagerNotification);
 }
 
-//TODO: (highlight)
 //This has to be probably the worst thing I've ever made but it seems to not make the game crash while still calling the GetRemoteActions
 //Wrapping a non-existing method and betting on the "compiling" (or precompile or whatever) of the LTBF file to be made BEFORE this file so that it can be wrapped
-//.....
-//If you ever see this please add a module to the _packed.reds file pleaaaaaaaaase
-
-@if(ModuleExists("LetThereBeFlight.Compatibility"))
+//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+@if(ModuleExists("LetThereBeFlight"))
 @wrapMethod(VehicleObject)
 protected func SendQuickhackCommands(shouldOpen: Bool) -> Void {
   let actions: array<ref<DeviceAction>>;
@@ -572,16 +631,16 @@ protected func SendQuickhackCommands(shouldOpen: Bool) -> Void {
 	context = this.GetVehiclePS().GenerateContext(gamedeviceRequestType.Remote, Device.GetInteractionClearance(), this.GetPlayerMainObject(), this.GetEntityID());
 	this.GetVehiclePS().GetRemoteActions(actions, context);
 	
-	//TODO: Remake the actions
-	ArrayPush(actions, ActionFlightEnable(this));
-    ArrayPush(actions, ActionFlightDisable(this));
-    ArrayPush(actions, ActionFlightMalfunction(this));
-    ArrayPush(actions, ActionDisableGravity(this));
-    ArrayPush(actions, ActionEnableGravity(this));
-    ArrayPush(actions, ActionBouncy(this));
+	//In my mod it's not even needed as I override all of these actions.
+	//
 
-	
-	
+	//ArrayPush(actions, ActionFlightEnable(this));
+    //ArrayPush(actions, ActionFlightDisable(this));
+    //ArrayPush(actions, ActionFlightMalfunction(this));
+    //ArrayPush(actions, ActionDisableGravity(this));
+    //ArrayPush(actions, ActionEnableGravity(this));
+    //ArrayPush(actions, ActionBouncy(this));
+
 	if this.m_isQhackUploadInProgerss {
 	  ScriptableDeviceComponentPS.SetActionsInactiveAll(actions, "LocKey#7020");
 	};
@@ -595,12 +654,19 @@ protected func SendQuickhackCommands(shouldOpen: Bool) -> Void {
 }
 
 
+// This is a very large function : Translate Actions Into Quickslot Commands.
+// All of the game quickhacks are DeviceActions (or ActionBool in some cases but both work)
+// The DeviceAction contains the ObjectAction (TweakDB Data of the quickhack) as well as the Duration of the quickhack
+// You need to convert it into a Quickslot (aka : an UI Interactible panel in some sort). In this case, converted as a card for our panel
+// Important Note : the quickslot contains everything, from visual to gameplay-related calls.
 
+// (large) Important Note 2 : The game tries to match the quickhacks in this function to your quickhack deck (cyberdeck defaults + installed ones)
+// In this version of the function, I don't want any sort of deck (either from the game or from generated ones like Drone Companions TechDecks),I want them to be accessible regardless of your deck
+// So I've made a small thing with my CustomHackingSystem mod : Storing every DeviceAction into a dictionary, and in this function, looking at the dictionary if the DeviceAction passed matches the one in the dict.
+// That way I know for sure that this is my quickhack and it can be added in the panel while overriding the default deck check from the game
 
-
-//LOCKEY
-//VehicleSecurityRework version of the TranslateActionsIntoQuickSlotCommands
-@if(!ModuleExists("LetThereBeFlight.Compatibility"))
+// TLDR: see it as if I was making a personal deck containing all the quickhacks that don't need to be checked and force to check these on top of the regular ones (with the custom ones with obviously priority over default ones)
+@if(!ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleObject)
 private func TranslateActionsIntoQuickSlotCommands(actions: array<ref<DeviceAction>>, out commands: array<ref<QuickhackData>>) -> Void {
 	
@@ -781,7 +847,7 @@ private func TranslateActionsIntoQuickSlotCommands(actions: array<ref<DeviceActi
 }
 
 //Hybrid version
-@if(ModuleExists("LetThereBeFlight.Compatibility"))
+@if(ModuleExists("LetThereBeFlight"))
 @wrapMethod(VehicleObject)
   private final func TranslateActionsIntoQuickSlotCommands(actions: array<ref<DeviceAction>>, out commands: array<ref<QuickhackData>>) -> Void {
 	let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGame());
@@ -960,15 +1026,8 @@ private func TranslateActionsIntoQuickSlotCommands(actions: array<ref<DeviceActi
 	QuickhackModule.SortCommandPriority(commands, this.GetGame());
 }
 
-
-
-
-
-
-
-
-//LOCKEY
-@if(!ModuleExists("LetThereBeFlight.Compatibility"))
+//Event called when the quickhack is being uploaded
+@if(!ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleObject)
   protected cb func OnUploadProgressStateChanged(evt: ref<UploadProgramProgressEvent>) -> Bool {
     if Equals(evt.progressBarContext, EProgressBarContext.QuickHack) {
@@ -984,9 +1043,13 @@ private func TranslateActionsIntoQuickSlotCommands(actions: array<ref<DeviceActi
     };
   }
 
+//UNKNOWN
+//Probably related to show mappin to the map
+//Notice the "Determin" spelling mistake xdd
 @addMethod(VehicleObject)
 public const func DeterminGameplayRoleMappinVisuaState(data: SDeviceMappinData) -> EMappinVisualState {
-    let hasAnyQuickHacksVoulnerabilities: Bool;
+    //Notice that nice spelling mistake here lmao :::: Would you like some Voulerability in your code ?
+	let hasAnyQuickHacksVoulnerabilities: Bool;
     let hasQuickHacksExposed: Bool;
     if this.GetVehiclePS().IsDisabled() {
       return EMappinVisualState.Inactive;
@@ -1013,6 +1076,7 @@ public const func DeterminGameplayRoleMappinVisuaState(data: SDeviceMappinData) 
     return this.DeterminGameplayRoleMappinVisuaState(data);
 }
 
+//Returns the Distraction Range (often used I think in Distraction Quickhacks)
 @addMethod(VehicleObject)
 protected const func GetDistractionRange(type: DeviceStimType) -> Float
 {
@@ -1023,6 +1087,8 @@ protected const func GetDistractionRange(type: DeviceStimType) -> Float
     return 15.00;
 }
 
+//Returns default distraction range based on the targeted device
+//very hardcoded very please-dont-do-this-in-your-games-please-please-thanks
 @addMethod(VehicleObject)
 public const func DeterminGameplayRoleMappinRange(data: SDeviceMappinData) -> Float 
 {
@@ -1059,6 +1125,7 @@ public const func DeterminGameplayRoleMappinRange(data: SDeviceMappinData) -> Fl
     return range;
 }
 
+//Returns the World location of the distraction
 @addMethod(VehicleObject)
 public final func GetDistractionPointPosition(device: wref<GameObject>) -> Vector4 
 {
@@ -1072,6 +1139,8 @@ public final func GetDistractionPointPosition(device: wref<GameObject>) -> Vecto
     return device.GetWorldPosition();
 }
 
+//This thing will send to the targeted device a visual Modifier showing the remaining duration of the quickhack
+//Also for some reasons the event where you call this function is getting re queued after the duration ends, so be careful on this one
 @addMethod(VehicleObject)
 private func ShowQuickHackDuration(action: ref<ScriptableDeviceAction>) -> Void 
 {
@@ -1098,10 +1167,11 @@ protected let m_activeStatusEffect: TweakDBID;
 @addField(VehicleObject)
 protected let m_activeProgramToUploadOnNPC: TweakDBID;
 
+//Applies a Status Effect on the target
 @addMethod(VehicleObject)
 protected func ApplyActiveStatusEffect(target: EntityID, statusEffect: TweakDBID) -> Void 
 {
-    if this.IsActiveStatusEffectValid() && this.GetVehiclePS().IsGlitching()
+    if this.IsActiveStatusEffectValid()
 	{
     	GameInstance.GetStatusEffectSystem(this.GetGame()).ApplyStatusEffect(target, statusEffect);
     }
@@ -1113,6 +1183,8 @@ protected final const func IsActiveStatusEffectValid() -> Bool
     return TDBID.IsValid(this.m_activeStatusEffect);
 }
 
+//Function used when you upload an action to a Puppet
+//I think this is also used when you use a PuppetAction, but not sure about it
 @addMethod(VehicleObject)
 protected func UploadActiveProgramOnNPC(targetID: EntityID) -> Void 
 {
@@ -1136,6 +1208,7 @@ protected final const func GetActiveProgramToUploadOnNPC() -> TweakDBID
     return this.m_activeProgramToUploadOnNPC;
 }
 
+//Achievement related, probably not needed
 @addMethod(VehicleObject)
 protected final func CheckDistractionAchievemnt() -> Void 
 {
@@ -1145,8 +1218,12 @@ protected final func CheckDistractionAchievemnt() -> Void
     dataTrackingSystem.QueueRequest(request);
 }
 
+// Called by the GetRemoteActions, this is the place where the GetQuickhackActions is being called 
+// It also handles remote interactions but it's not needed in our case
+// again : DONT PUT YOUR QUICKHACKS HEREEEE, PUT YOUR QUICKHACKS IN THE "GetQuickHackActions" function
 @addMethod(VehicleComponentPS)
-  public func DetermineQuickhackInteractionState(interactionComponent: ref<InteractionComponent>, context: GetActionsContext) -> Void {
+public func DetermineQuickhackInteractionState(interactionComponent: ref<InteractionComponent>, context: GetActionsContext) -> Void 
+{
 	let actions: array<ref<DeviceAction>>;
 	let activeChoices: array<InteractionChoice>;
 	let allChoices: array<InteractionChoice>;

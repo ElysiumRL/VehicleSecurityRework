@@ -276,16 +276,48 @@ protected cb func OnForceBrakesVehicle(evt:ref<VehicleForceBrakesDeviceAction>) 
 {
 	if !this.quickhackForceBrakesExecuted
 	{
-		LogChannel(n"DEBUG","Hello World");
-		this.GetOwnerEntity().ForceBrakesFor(evt.GetDurationValue());
+		//this.GetOwnerEntity().ForceBrakesFor(evt.GetDurationValue());
+		this.GetOwnerEntity().ForceBrakesDrivingBehavior();
 		this.quickhackForceBrakesExecuted = true;
 		let endEvt: ref<EndForceBrakes> = new EndForceBrakes();
 		this.QueuePSEventWithDelay(this, endEvt, evt.GetDurationValue());
 		this.GetOwnerEntity().ShowQuickHackDuration(evt);
+
+
 	}
 	else
 	{
 		this.quickhackForceBrakesExecuted = false;
+		
+		//Potential fix for panic driving not ending
+		//let trafficCommand:ref<AIVehicleJoinTrafficCommand> = new AIVehicleJoinTrafficCommand();
+		//trafficCommand.needDriver = false;
+		//trafficCommand.useKinematic = false;
+		
+		//let commandExecuter:ref<AICommandEvent> = new AICommandEvent();
+		//commandExecuter.command = trafficCommand;
+		//commandExecuter.timeToLive = 100.0;
+    	//this.GetOwnerEntity().QueueEvent(commandExecuter);
+
+		this.GetOwnerEntity().ResetReactionSequenceOfAllPassengers();
+		this.GetOwnerEntity().m_drivingTrafficPattern = n"normal";
+		this.GetOwnerEntity().m_fearInside = false;
+		let vehicleReactionEvent = new HandleReactionEvent();
+        vehicleReactionEvent.fearPhase = 0;
+		let fakeStim: ref<StimuliEvent> = new StimuliEvent();
+        vehicleReactionEvent.stimEvent = fakeStim;
+		this.GetOwnerEntity().m_reactionTriggerEvent = vehicleReactionEvent;
+		vehicleReactionEvent.stimEvent.sourceObject = this.GetPlayerMainObject();
+
+		//this.ResetReactionSequenceOfAllPassengers();
+		//this.ResetTimesSentReactionEvent();
+		//this.m_crowdMemberComponent.ChangeMoveType(this.m_drivingTrafficPattern);
+		//this.ResendHandleReactionEvent();
+		this.GetOwnerEntity().m_timesSentReactionEvent = 0;
+		this.GetOwnerEntity().ResetDrivingBehavior();
+
+		
+
 	}
 	return EntityNotificationType.DoNotNotifyEntity;
 }
@@ -294,6 +326,42 @@ public class EndForceBrakes extends Event
 {
 
 }
+
+@addMethod(VehicleObject)
+private final func ForceBrakesDrivingBehavior() -> Void 
+{
+	if !this.m_abandoned && !this.IsPlayerMounted() 
+	{
+		this.m_drivingTrafficPattern = n"stop";
+		this.m_crowdMemberComponent.ChangeMoveType(this.m_drivingTrafficPattern);
+		this.ResetTimesSentReactionEvent();
+	}
+}
+
+@addMethod(VehicleObject)
+private final func RecklessDrivingBehavior() -> Void 
+{
+	if !this.m_abandoned && !this.IsPlayerMounted() 
+	{
+		this.ResetReactionSequenceOfAllPassengers();
+		this.m_drivingTrafficPattern = n"panic";
+		this.m_crowdMemberComponent.ChangeMoveType(this.m_drivingTrafficPattern);
+		this.ResetTimesSentReactionEvent();
+	}
+}
+@addMethod(VehicleObject)
+private final func ResetDrivingBehavior() -> Void 
+{
+	if Equals(this.m_drivingTrafficPattern, n"stop") 
+	{
+		//this.ResetReactionSequenceOfAllPassengers();
+	}
+	this.m_drivingTrafficPattern = n"normal";
+	this.m_crowdMemberComponent.ChangeMoveType(this.m_drivingTrafficPattern);
+	this.ResetTimesSentReactionEvent();
+	//GameInstance.GetDelaySystem(this.GetGame()).DelayEvent(this, this.m_reactionTriggerEvent, 0.00);
+}
+
 
 @addMethod(VehicleComponentPS)
 protected cb func OnEndForceBrakes(evt:ref<EndForceBrakes>) -> Void
@@ -311,33 +379,41 @@ protected cb func OnRecklessDriving(evt:ref<VehicleRecklessDrivingDeviceAction>)
 	{
 		this.GetVehiclePS().quickhackRecklessDrivingExecuted = true;
 		this.ShowQuickHackDuration(evt);
+		this.RecklessDrivingBehavior();
 
-		let panicDrive: ref<AIVehiclePanicCommand> = new AIVehiclePanicCommand();
-		panicDrive.needDriver = false;
-		panicDrive.useKinematic = false;
-
-    	let commandEvent: ref<AICommandEvent> = new AICommandEvent();
-    	commandEvent.command = panicDrive;
-		commandEvent.timeToLive = evt.GetDurationValue();
-    	this.QueueEvent(commandEvent);
-
-
-		//let command: ref<AIVehicleChaseCommand> = new AIVehicleChaseCommand();
-    	//command.target = GameInstance.GetPlayerSystem(this.GetGame()).GetLocalPlayerMainGameObject();
-    	//command.distanceMin = 5.00;
-    	//command.distanceMax = 10.00;
-    	//command.forcedStartSpeed = 10.0;
-		//command.useKinematic = true;
-
-		//command.needDriver = false;
-
-		//let throttleEvent:ref<VehicleRecklessDrivingDeviceAction> = new VehicleRecklessDrivingDeviceAction();
-		//GameInstance.GetDelaySystem(this.GetGame()).DelayEventNextFrame(this, throttleEvent);
-		//LogChannel(n"DEBUG","Throttle");
+		//let panicDrive: ref<AIVehiclePanicCommand> = new AIVehiclePanicCommand();
+		//panicDrive.needDriver = false;
+		//panicDrive.useKinematic = false;
+    	
+		//let commandEvent: ref<AICommandEvent> = new AICommandEvent();
+    	//commandEvent.command = panicDrive;
+		//commandEvent.timeToLive = 1.0;
+    	//this.QueueEvent(commandEvent);
 	}
 	else
 	{
 		this.GetVehiclePS().quickhackRecklessDrivingExecuted = false;
+		//Potential fix for panic driving not ending
+		let trafficCommand:ref<AIVehicleJoinTrafficCommand> = new AIVehicleJoinTrafficCommand();
+		trafficCommand.needDriver = false;
+		trafficCommand.useKinematic = true;
+
+		let commandExecuter:ref<AICommandEvent> = new AICommandEvent();
+		commandExecuter.command = trafficCommand;
+		commandExecuter.timeToLive = 0.0;
+    	this.QueueEvent(commandExecuter);
+		
+		this.m_drivingTrafficPattern = n"normal";
+		this.m_fearInside = false;
+		let vehicleReactionEvent = new HandleReactionEvent();
+        vehicleReactionEvent.fearPhase = 0;
+		let fakeStim: ref<StimuliEvent> = new StimuliEvent();
+        vehicleReactionEvent.stimEvent = fakeStim;
+		this.m_reactionTriggerEvent = vehicleReactionEvent;
+		vehicleReactionEvent.stimEvent.sourceObject = this.GetPlayerMainObject();
+		this.m_timesSentReactionEvent = 0;
+
+		this.ResetDrivingBehavior();
 
 	}
 	return EntityNotificationType.DoNotNotifyEntity;
