@@ -16,6 +16,13 @@ import LetThereBeFlight.Compatibility.*
 
 	99.99% of these functions have been a stupid copy/paste from Device/InteractiveDevice/VendingMachineControllerPS/VendingMachine (and many more devices)
 	Some of these functions are not needed (and can be removed) but i forgot which one to remove ...
+
+	functions/methods marked as //UNKNOWN means that I don't know too much about these functions
+	If there is a mistake in the description of the function, please report them : 
+		- with github (https://github.com/ElysiumRL/VehicleSecurityRework
+		or
+		- on discord : Elysium#7743
+
 */
 
 @wrapMethod(ScriptedPuppet)
