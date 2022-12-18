@@ -24,7 +24,7 @@ function VehicleSecurityRework:new()
 		--#region Vehicle Combat Compatibility
 
 		ObserveAfter('VehicleSecurityRework.Hack.UnlockVehicleProgramAction','ExecuteProgramFailure',function (self)
-			local systemSettings = Game.GetScriptableSystemsContainer():Get("VehicleSecurityRework.Base.VehicleSecurityRework")
+			local systemSettings = Game.GetScriptableSystemsContainer():Get("VehicleSecurityRework.Settings.VehicleSecurityRework")
 			if systemSettings.vehicleCombatCompatibility then
 				---@type VehicleComponentPS
 				local vehicle = self.hackInstanceSettings.hackedTarget

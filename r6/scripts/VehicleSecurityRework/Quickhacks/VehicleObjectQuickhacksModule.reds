@@ -1,6 +1,9 @@
 module VehicleSecurityRework.Quickhack
 
+@if(ModuleExists("HackingExtensions"))
 import HackingExtensions.*
+
+@if(ModuleExists("CustomHackingSystem.Tools"))
 import CustomHackingSystem.Tools.*
 
 
@@ -18,8 +21,8 @@ import LetThereBeFlight.Compatibility.*
 	Some of these functions are not needed (and can be removed) but i forgot which one to remove ...
 
 	functions/methods marked as //UNKNOWN means that I don't know too much about these functions
-	If there is a mistake in the description of the function, please report them : 
-		- with github (https://github.com/ElysiumRL/VehicleSecurityRework
+	If there is a mistake in the description of the function (or one to remove), please report them : 
+		- with github (https://github.com/ElysiumRL/VehicleSecurityRework)
 		or
 		- on discord : Elysium#7743
 
@@ -39,6 +42,10 @@ protected const func ShouldRegisterToHUD() -> Bool
 @replaceMethod(VehicleObject)
 public const func CanRevealRemoteActionsWheel() -> Bool
 {
+	if(!(this == (this as CarObject) || this == (this as BikeObject)))
+	{
+		return false;
+	}
 	return true;
 }
 
@@ -46,6 +53,10 @@ public const func CanRevealRemoteActionsWheel() -> Bool
 @addMethod(VehicleObject)
 public const func IsQuickHackAble() -> Bool
 {
+	if(!(this == (this as CarObject) || this == (this as BikeObject)))
+	{
+		return false;
+	}
 	return true;
 }
 
@@ -53,6 +64,10 @@ public const func IsQuickHackAble() -> Bool
 @addMethod(VehicleObject)
 public const func IsQuickHacksExposed() -> Bool
 {
+	if(!(this == (this as CarObject) || this == (this as BikeObject)))
+	{
+		return false;
+	}
 	return true;
 }
 
@@ -586,6 +601,7 @@ public const func GetPlayerMainObject() -> ref<PlayerPuppet>
 	return GetPlayer(this.GetGame());
 }
 
+@if(!ModuleExists("LetThereBeFlight"))
 @addField(VehicleObject)
 protected let m_isQhackUploadInProgerss:Bool;
 
@@ -638,8 +654,7 @@ protected func SendQuickhackCommands(shouldOpen: Bool) -> Void {
 	context = this.GetVehiclePS().GenerateContext(gamedeviceRequestType.Remote, Device.GetInteractionClearance(), this.GetPlayerMainObject(), this.GetEntityID());
 	this.GetVehiclePS().GetRemoteActions(actions, context);
 	
-	//In my mod it's not even needed as I override all of these actions.
-	//
+	//In my mod it's not even needed as I override all of these actions
 
 	//ArrayPush(actions, ActionFlightEnable(this));
     //ArrayPush(actions, ActionFlightDisable(this));
