@@ -194,23 +194,6 @@ public func GetVehicleHijackDifficulty() -> String
     return ToString(hijackDifficulty);
 }
 
-//TODO: remove it (?)
-
-@wrapMethod(VehicleComponentPS)
-public final func GetValidChoices(objectActionRecords: array<wref<ObjectAction_Record>>, 
-context: GetActionsContext, objectActionsCallbackController: wref<gameObjectActionsCallbackController>, 
-out choices: array<InteractionChoice>, isAutoRefresh: Bool) -> Void 
-{
-    //TODO: remove it (?)
-   
-    //if (this.GetIsPlayerVehicle() || this.GetIsStolen() || this.IsMarkedAsQuest())
-    //{
-    //    this.UnlockHackedVehicle();
-    //}
-   
-    wrappedMethod(objectActionRecords,context,objectActionsCallbackController,choices,isAutoRefresh);
-}
-
 //Unlocks the vehicle (also marks it as stolen)
 @addMethod(VehicleComponentPS)
 public final func UnlockHackedVehicle() -> Void
@@ -255,10 +238,10 @@ protected func GameAttached() -> Void
 {
     wrappedMethod();
 
-
     //this.m_canHandleAdvancedInteraction = true;
     //this.m_forceResolveStateOnAttach = true;
     //this.m_exposeQuickHacks = true;
+    //this.RefreshSkillchecks();
 
     //Add quickhack vunerabilities (in the details scanner panel)
     //This is cosmetic, it doesn't influence available quichacks
@@ -269,16 +252,21 @@ protected func GameAttached() -> Void
     this.AddQuickHackVulnerability(t"DeviceAction.ExplodeVehicle");
     this.AddQuickHackVulnerability(t"DeviceAction.MalfunctionClassHack");
     this.AddQuickHackVulnerability(t"DeviceAction.ForceBrakes");
-    
-    let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
-    let params:ref<VehicleSecurityRework> = container.Get(n"VehicleSecurityRework.Base.VehicleSecurityRework") as VehicleSecurityRework;
+    this.AddQuickHackVulnerability(t"DeviceAction.RecklessDriving");
 
-    //Ignore the hack part if it's not needed
-    if (this.GetIsPlayerVehicle() || this.GetIsStolen() || this.IsMarkedAsQuest() || params.forceSecurityUnlock)
+    let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
+    let params:ref<VehicleSecurityRework> = container.Get(n"VehicleSecurityRework.Settings.VehicleSecurityRework") as VehicleSecurityRework;
+    //Ignore the hack part if it's not needed (or already hacked previously)
+    if 
+    (
+        this.GetIsPlayerVehicle() 
+        || this.GetIsStolen() 
+        || this.IsMarkedAsQuest() 
+        || this.m_isVehicleHacked
+        || params.forceSecurityUnlock)
     {
         this.UnlockHackedVehicle();
     }
-    //this.RefreshSkillchecks();
 }
 
 //Add the vulnerabilities & vehicle faction to the scanner
@@ -302,7 +290,7 @@ public const func CompileScannerChunks() -> Bool
         {
             let vulRecord:ref<ObjectAction_Record> = TweakDBInterface.GetObjectActionRecord(vulnerabilityTDBID);
             let isVulnerabilityActive: Bool = vehiclePS.IsVehicleSecurityBreached();
-            if(Equals(t"DeviceAction.RemoteSecurityBreach",vulnerabilityTDBID))
+            if (Equals(t"DeviceAction.RemoteSecurityBreach",vulnerabilityTDBID))
             {
                 if(!vehiclePS.IsVehicleSecurityHardened() 
                 && !vehiclePS.IsVehicleSecurityBreached())
@@ -314,7 +302,21 @@ public const func CompileScannerChunks() -> Bool
                     isVulnerabilityActive = false;
                 }
             }
-            
+
+            if (Equals(t"DeviceAction.RecklessDriving",vulnerabilityTDBID))
+            {
+                if(!vehiclePS.IsVehicleSecurityHardened() 
+                && vehiclePS.IsVehicleSecurityBreached()
+                && vehiclePS.CanTriggerRecklessDriving)
+                {
+                    isVulnerabilityActive = true;
+                }
+                else
+                {
+                    isVulnerabilityActive = false;
+                }
+            }
+
             if (vehiclePS.GetIsDestroyed() || vehiclePS.GetIsSubmerged())
             {
                 isVulnerabilityActive = false;
