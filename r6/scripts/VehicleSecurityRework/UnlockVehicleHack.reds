@@ -55,13 +55,6 @@ public class UnlockVehicleProgramAction extends HackProgramAction
             preventionSystem.QueueRequest(crimeWitness);
         }
         
-        //Removed because maybe not useful anymore ?
-        //if params.vehicleCombatCompatibility && !GetPlayer(this.gameInstance).IsInCombat()
-        //{
-        //	let preventionRequest:ref<PreventionDelayedSpawnRequest> = new PreventionDelayedSpawnRequest();
-        //	preventionRequest.heatStage = EPreventionHeatStage.Heat_1;
-        //	preventionSystem.QueueRequest(preventionRequest);
-        //}
 
         //and poof you get the police triggered at you (the same as if you were killing a civilian)
         
