@@ -25,7 +25,8 @@ The mod adds a layer of security on top of the already existing "Security". You 
 
 Certain vehicles (especially richer ones) do have a stronger security system : If you fail twice the hack, the security will be reinforced, blocking the possibility to hack them again
 
-**(NEW)** Added support for [Vehicle Combat](https://www.nexusmods.com/cyberpunk2077/mods/3815) mod : If you fail a hack, members from the hacked vehicle's faction will appear (e.g : If you try and fail to hack an Arasaka-marked vehicle, Arasaka members will come against you). Unaffiliated vehicles will spawn NCPD vehicles. To activate the support, make sure to enable "Vehicle Combat Compatibility" in game (via Mod Settings)
+(Optional) Added support for [Vehicle Combat](https://www.nexusmods.com/cyberpunk2077/mods/3815) mod : If you fail a hack, members from the hacked vehicle's faction will appear (*e.g : If you try and fail to hack an Arasaka-marked vehicle, Arasaka members will come against you*).
+Unaffiliated vehicles will spawn NCPD vehicles. To activate the support, make sure to enable "Vehicle Combat Compatibility" in game (via Mod Settings)
 
 The mod also adds quickhacks for vehicles :
  - Unlock Vehicle
@@ -39,10 +40,13 @@ The mod also adds quickhacks for vehicles :
     > Distracts nearby enemies for a short time
  - Force Brakes
  
- 	  > Forces Brakes for 10 Seconds
+ 	  > Forces Brakes for 10 Seconds (*May not always work paired with Reckless Driving*)
  - Explode
  
  	  > Blows up the Vehicle. You won't get chased by the police if you blow up a vehicle with a civilian inside
+ - Reckless Driving
+ 
+ 	  > Forces the Vehicle to start driving recklessly (ONE TIME USE ONLY) (*May also not work sometimes when paired with Force Brakes*)       
 
 Vehicles owned by the player are unlocked by default and cannot get quickhacked
 
