@@ -121,7 +121,8 @@ public let CanTriggerRecklessDriving:Bool = true;
 @addField(VehicleObject)
 public let AffiliationOverride : TweakDBID = t"";
 
-
+@addField(VehicleObject)
+public let AffiliationOverrideString : String = "";
 
 //Returns the tweakDBID path of the minigame used to unlock the vehicle
 @addMethod(VehicleComponentPS)
@@ -268,6 +269,127 @@ protected func GameAttached() -> Void
         this.UnlockHackedVehicle();
     }
 }
+
+
+@wrapMethod(VehicleObject)
+protected cb func OnGameAttached() -> Bool 
+{
+    wrappedMethod();
+    //Force the affiliation based on appearance name
+    //So sadly since tweakDB editing isn't enough... Gotta have to do this for every faction (or at least as much as possible)
+    if Equals(this.GetRecord().Affiliation().Type(),gamedataAffiliation.Unaffiliated)
+    {
+        let appearanceName:String = NameToString(this.GetCurrentAppearanceName());
+        
+        if StrContains(appearanceName,"tyger")
+        {
+            this.AffiliationOverride = t"Factions.TygerClaws";
+            this.AffiliationOverrideString = "Factions.TygerClaws";
+            return true;
+        }
+
+        if StrContains(appearanceName,"animals")
+        {
+            this.AffiliationOverride = t"Factions.Animals";
+            this.AffiliationOverrideString = "Factions.Animals";
+            return true;
+        }
+        
+        if StrContains(appearanceName,"6th")
+        {
+            this.AffiliationOverride = t"Factions.SixthStreet";
+            this.AffiliationOverrideString = "Factions.SixthStreet";
+            return true;
+        }
+        
+        if StrContains(appearanceName,"arasaka")
+        {
+            this.AffiliationOverride = t"Factions.TygerClaws";
+            this.AffiliationOverrideString = "Factions.TygerClaws";
+            return true;
+        }
+
+        if StrContains(appearanceName,"maelstrom")
+        {
+            this.AffiliationOverride = t"Factions.Maelstrom";
+            this.AffiliationOverrideString = "Factions.Maelstrom";
+            return true;
+        }
+
+        if StrContains(appearanceName,"valentinos")
+        {
+            this.AffiliationOverride = t"Factions.Valentinos";
+            this.AffiliationOverrideString = "Factions.Valentinos";
+            return true;
+        }
+
+        if StrContains(appearanceName,"aldecaldos") || StrContains(appearanceName,"aldecados")
+        {
+            this.AffiliationOverride = t"Factions.Aldecaldos";
+            this.AffiliationOverrideString = "Factions.Aldecaldos";
+            return true;
+        }
+            
+        if StrContains(appearanceName,"netwatch")
+        {
+            this.AffiliationOverride = t"Factions.NetWatch";
+            this.AffiliationOverrideString = "Factions.NetWatch";
+            return true;
+        }
+        
+        if StrContains(appearanceName,"militech")
+        {
+            this.AffiliationOverride = t"Factions.Militech";
+            this.AffiliationOverrideString = "Factions.Militech";
+            return true;
+        }
+
+        if StrContains(appearanceName,"wraiths")
+        {
+            this.AffiliationOverride = t"Factions.Wraiths";
+            this.AffiliationOverrideString = "Factions.Wraiths";
+            return true;
+        }
+
+        if StrContains(appearanceName,"mox")
+        {
+            this.AffiliationOverride = t"Factions.TheMox";
+            this.AffiliationOverrideString = "Factions.TheMox";
+            return true;
+        }
+        
+        //---------
+
+        if StrContains(appearanceName,"trama_team") || StrContains(appearanceName,"trauma")
+        {
+            this.AffiliationOverride = t"Factions.TraumaTeam";
+            this.AffiliationOverrideString = "Factions.TraumaTeam";
+            return true;
+        }
+        
+        if StrContains(appearanceName,"ncpd")
+        {
+            this.AffiliationOverride = t"Factions.NCPD";
+            this.AffiliationOverrideString = "Factions.NCPD";
+            return true;
+        }
+        
+        if StrContains(appearanceName,"news")
+        {
+            this.AffiliationOverride = t"Factions.News54";
+            this.AffiliationOverrideString = "Factions.News54";
+            return true;
+        }
+        
+        if StrContains(appearanceName,"kangtao")
+        {
+            this.AffiliationOverride = t"Factions.KangTao";
+            this.AffiliationOverrideString = "Factions.KangTao";
+            return true;
+        }
+    }
+}
+
 
 //Add the vulnerabilities & vehicle faction to the scanner
 @wrapMethod(VehicleObject)
@@ -422,11 +544,11 @@ public final func DetermineActionsToPush(interaction: ref<InteractionComponent>,
     
     //this removes the interaction for demo & engineering  actions, but it just won't put the default mount action in game, wtf
     //Needs a fix or a removal from the tweakdb but not tested yet
-    let actionsToRemove:array<wref<ObjectAction_Record>>;
+    let actionsToRemove : array<wref<ObjectAction_Record>>;
     
     while i < ArraySize(actionRecords) 
     {
-        let actionName :CName= actionRecords[i].ActionName();
+        let actionName : CName = actionRecords[i].ActionName();
         switch actionName {
             case n"VehicleHijack":
             //ArrayPush(actionsToRemove,actionRecords[i]);
