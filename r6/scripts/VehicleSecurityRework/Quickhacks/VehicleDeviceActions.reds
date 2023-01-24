@@ -180,6 +180,8 @@ protected cb func OnActionVehicleDistraction(evt:ref<VehicleDistractionDeviceAct
         this.GetOwnerEntity().ToggleHornForDuration(evt.GetDurationValue());
         let visualDistraction: ref<VehicleDistractionVisual> = new VehicleDistractionVisual();
         this.GetOwnerEntity().QueueEvent(visualDistraction);
+
+        //Here
         this.GetOwnerEntity().ShowQuickHackDuration(evt);
     }
     else
