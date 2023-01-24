@@ -1,0 +1,16 @@
+[[UNRESOLVED_REF]]
+id = "MISSING_TWEAKXL"
+span_starts_with = "TweakDBManager"
+message = "[VehicleSecurityRework] TweakXL not found. Make sure it is installed properly."
+
+[[UNRESOLVED_TYPE]]
+id = "MISSING_TWEAKXL"
+file = "VehicleSecurityRework/Vehicle/VehicleExtensions.reds"
+line_contains = "extends ScriptableTweak"
+message = "[VehicleSecurityRework] TweakXL not found. Make sure it is installed properly."
+
+[[UNRESOLVED_METHOD]]
+id = "MISSING_TWEAKXL"
+file = "VehicleSecurityRework/Vehicle/VehicleExtensions.reds"
+line_contains = "method GetFlat"
+message = "[VehicleSecurityRework] TweakXL not found. Make sure it is installed properly."
