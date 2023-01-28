@@ -6,6 +6,8 @@ import HackingExtensions.*
 @if(ModuleExists("CustomHackingSystem.Tools"))
 import CustomHackingSystem.Tools.*
 
+import VehicleSecurityRework.Settings.*
+
 
 //This is useless since for now there's nothing in the module but if something gets added one day... we never know
 @if(ModuleExists("LetThereBeFlight"))
@@ -540,99 +542,119 @@ public final const func GetFxResourceMapper() -> ref<FxResourceMapperComponent>
 	return point;
   }
 
+@addField(VehicleObject)
+protected let cachedVehicleSecurityReworkedSettings:ref<VehicleSecurityRework>;
+
+@wrapMethod(VehicleObject)
+protected cb func OnGameAttached() -> Bool
+{
+	wrappedMethod();
+	let container = GameInstance.GetScriptableSystemsContainer(this.GetGame());
+	this.cachedVehicleSecurityReworkedSettings = container.Get(n"VehicleSecurityRework.Settings.VehicleSecurityRework") as VehicleSecurityRework;
+}
 
 //Returns the Slot Component
 @addMethod(VehicleObject)
-  public final const func GetSlotComponent() -> ref<SlotComponent> {
+public final const func GetSlotComponent() -> ref<SlotComponent>
+{
 	return this.m_slotComponent;
-  }
+}
 
 @replaceMethod(VehicleObject)
 public const func GetCurrentOutline() -> EFocusOutlineType
 {
-  let outlineType: EFocusOutlineType;
-  if this.IsDestroyed() {
-    return EFocusOutlineType.INVALID;
-  };
-  if this.IsQuest() {
-    outlineType = EFocusOutlineType.QUEST;
-  } else {
-    if this.IsNetrunner() {
-      outlineType = EFocusOutlineType.HACKABLE;
-    } else {
-      return EFocusOutlineType.HACKABLE;
-    };
-  };
-  return outlineType;
+	let outlineType: EFocusOutlineType;
+
+	if (this.IsDestroyed())
+	{
+		return EFocusOutlineType.INVALID;
+	}
+	if (this.IsQuest())
+	{
+		outlineType = EFocusOutlineType.QUEST;
+	} 
+	else
+	{
+		if (this.IsNetrunner() || ( 
+		this.cachedVehicleSecurityReworkedSettings.enableHighlights && 
+		!this.GetVehiclePS().m_playerVehicle))
+		{
+			if(this.GetVehiclePS().isSecurityHardened || IsDefined(this as AVObject))
+			{
+				outlineType = EFocusOutlineType.HOSTILE;
+			}
+			else
+			{
+				outlineType = EFocusOutlineType.HACKABLE;
+			}
+		}
+		else
+		{
+			outlineType = EFocusOutlineType.INVALID;
+		}
+	}
+	return outlineType;
 }
 
 @replaceMethod(VehicleObject)
-public const func GetDefaultHighlight() -> ref<FocusForcedHighlightData> {
-    let highlight: ref<FocusForcedHighlightData>;
-    if this.IsDestroyed() || this.IsPlayerMounted() {
-      return null;
-    };
-    if this.m_scanningComponent.IsBraindanceBlocked() || this.m_scanningComponent.IsPhotoModeBlocked() {
-      return null;
-    };
-    highlight = new FocusForcedHighlightData();
+public const func GetDefaultHighlight() -> ref<FocusForcedHighlightData>
+{
+    if this.IsDestroyed() || this.IsPlayerMounted()
+	{
+    	return null;
+    }
+
+    if this.m_scanningComponent.IsBraindanceBlocked() || this.m_scanningComponent.IsPhotoModeBlocked()
+	{
+    	return null;
+    }
+    let highlight: ref<FocusForcedHighlightData> = new FocusForcedHighlightData();
     highlight.outlineType = this.GetCurrentOutline();
-    if Equals(highlight.outlineType, EFocusOutlineType.INVALID) {
-      return null;
-    };
+    
+	if Equals(highlight.outlineType, EFocusOutlineType.INVALID)
+	{
+    	return null;
+    }
+
     highlight.sourceID = this.GetEntityID();
     highlight.sourceName = this.GetClassName();
-    if Equals(highlight.outlineType, EFocusOutlineType.QUEST) {
-      highlight.highlightType = EFocusForcedHighlightType.QUEST;
-    } else {
-      if Equals(highlight.outlineType, EFocusOutlineType.HACKABLE) {
-        highlight.highlightType = EFocusForcedHighlightType.HACKABLE;
-      };
-    };
-    if highlight != null {
-      if this.IsNetrunner() {
-        highlight.patternType = VisionModePatternType.Netrunner;
-      } else {
-        highlight.patternType = VisionModePatternType.Default;
-      };
-    };
-	highlight.priority = EPriority.Medium;
-	highlight.highlightType = EFocusForcedHighlightType.HACKABLE;
-	highlight.outlineType = EFocusOutlineType.QUEST;
+    if Equals(highlight.outlineType, EFocusOutlineType.QUEST)
+	{
+    	highlight.highlightType = EFocusForcedHighlightType.QUEST;
+    }
+	else
+	{
+    	if (Equals(highlight.outlineType, EFocusOutlineType.HACKABLE))
+		{
+    		highlight.highlightType = EFocusForcedHighlightType.HACKABLE;
+    	}
+		if (Equals(highlight.outlineType, EFocusOutlineType.HOSTILE))
+		{
+    		highlight.highlightType = EFocusForcedHighlightType.HOSTILE;
+    	}
+    }
+    if (highlight != null)
+	{
+    	if (this.IsNetrunner())
+		{
+    		highlight.patternType = VisionModePatternType.Netrunner;
+    	}
+		else
+		{
+    		highlight.patternType = VisionModePatternType.Default;
+    	}
+    }
 
     return highlight;
-  }
+}
 
 
 //Event called by the HUD system to open quickhack panel (and set currently scannned object as focused)
 @addMethod(VehicleObject)
 protected cb func OnHUDInstruction(evt: ref<HUDInstruction>) -> Bool {
-	//let data:ref<FocusForcedHighlightData> = new FocusForcedHighlightData();
-    //data.highlightType = EFocusForcedHighlightType.HACKABLE;
-    //data.outlineType = EFocusOutlineType.HACKABLE;
-    //data.priority = EPriority.Absolute;
-    //data.patternType = VisionModePatternType.Netrunner;
-    //data.isRevealed = true;
-    //data.isSavable = true;
-	
-	//let highlightData: ref<HighlightInstance> = new HighlightInstance();
-	//highlightData.entityID = this.GetEntityID();
-	//highlightData.instant = true;
-    //highlightData.context = HighlightContext.FULL;
-    //highlightData.state = InstanceState.ON;
-    //data.InitializeWithHudInstruction(highlightData);
-    //this.m_scanningComponent.ForceVisionAppearance(data);
-    //this.SetScannerDirty(true);
-	//evt.highlightInstructions = highlightData;
-
-
-
 	super.OnHUDInstruction(evt);
 	if Equals(evt.highlightInstructions.GetState(), InstanceState.ON) {
 	  this.GetVehiclePS().SetFocusModeData(true);
-
-
-
 	  this.ResolveDeviceOperationOnFocusMode(gameVisionModeType.Focus, true);
 	} else {
 	  if evt.highlightInstructions.WasProcessed() {

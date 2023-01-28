@@ -11,6 +11,12 @@ public class VehicleSecurityRework extends ScriptableSystem
     @runtimeProperty("ModSettings.displayName","Auto Unlock Security")
     @runtimeProperty("ModSettings.description","If you only want vehicle quickhacks (Requires Game Restart)")
     public let forceSecurityUnlock:Bool = false;
+   
+    @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+    @runtimeProperty("ModSettings.category","Visibility")
+    @runtimeProperty("ModSettings.displayName","Toggle Quickhack Highlight")
+    @runtimeProperty("ModSettings.description","Toggles the green highlight effect for vehicles (Low range) (Requires Game Restart)")
+    public let enableHighlights:Bool = true;
 
     @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
     @runtimeProperty("ModSettings.category","Compatibility")
