@@ -575,9 +575,9 @@ public const func GetCurrentOutline() -> EFocusOutlineType
 	}
 	else
 	{
-		if (this.IsNetrunner() && this.cachedVehicleSecurityReworkedSettings.enableHighlights)
+		if (this.cachedVehicleSecurityReworkedSettings.enableHighlights)
 		{
-			if(this.GetVehiclePS().isSecurityHardened || !(IsDefined(this as CarObject) || IsDefined(this as BikeObject)) || this.GetVehiclePS().m_playerVehicle)
+			if (this.GetVehiclePS().isSecurityHardened || !(IsDefined(this as CarObject) || IsDefined(this as BikeObject)) || this.GetVehiclePS().m_playerVehicle)
 			{
 				outlineType = EFocusOutlineType.HOSTILE;
 			}
@@ -662,7 +662,6 @@ protected cb func OnHUDInstruction(evt: ref<HUDInstruction>) -> Bool {
 	};
 	if evt.quickhackInstruction.ShouldProcess() && !this.IsPlayerMounted()
 	{
-		
 	  this.TryOpenQuickhackMenu(evt.quickhackInstruction.ShouldOpen());
 	}
 	return true;
