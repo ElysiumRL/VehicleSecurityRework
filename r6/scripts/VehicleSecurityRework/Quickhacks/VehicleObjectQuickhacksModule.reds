@@ -572,14 +572,12 @@ public const func GetCurrentOutline() -> EFocusOutlineType
 	if (this.IsQuest())
 	{
 		outlineType = EFocusOutlineType.QUEST;
-	} 
+	}
 	else
 	{
-		if (this.IsNetrunner() || ( 
-		this.cachedVehicleSecurityReworkedSettings.enableHighlights && 
-		!this.GetVehiclePS().m_playerVehicle))
+		if (this.IsNetrunner() && this.cachedVehicleSecurityReworkedSettings.enableHighlights)
 		{
-			if(this.GetVehiclePS().isSecurityHardened || IsDefined(this as AVObject))
+			if(this.GetVehiclePS().isSecurityHardened || !(IsDefined(this as CarObject) || IsDefined(this as BikeObject)) || this.GetVehiclePS().m_playerVehicle)
 			{
 				outlineType = EFocusOutlineType.HOSTILE;
 			}
@@ -662,7 +660,9 @@ protected cb func OnHUDInstruction(evt: ref<HUDInstruction>) -> Bool {
 		this.ResolveDeviceOperationOnFocusMode(gameVisionModeType.Default, false);
 	  };
 	};
-	if evt.quickhackInstruction.ShouldProcess() {
+	if evt.quickhackInstruction.ShouldProcess() && !this.IsPlayerMounted()
+	{
+		
 	  this.TryOpenQuickhackMenu(evt.quickhackInstruction.ShouldOpen());
 	}
 	return true;
