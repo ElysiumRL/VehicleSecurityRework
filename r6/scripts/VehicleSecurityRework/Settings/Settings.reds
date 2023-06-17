@@ -6,6 +6,9 @@ public class VehicleSecurityRework extends ScriptableSystem
 {
     //Settings
 
+    private let enableArchiveXLDebugLog: Bool = false;
+
+
     @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
     @runtimeProperty("ModSettings.category","General")
     @runtimeProperty("ModSettings.displayName","Auto Unlock Security")
@@ -125,10 +128,16 @@ public class VehicleSecurityRework extends ScriptableSystem
     public let liftoffHack:Bool = true;
 
     //Called by the game when the scriptable system is created
-    //private func OnAttach() -> Void
-    //{
-    //    LogChannel(n"DEBUG","[VehicleSecurityRework] Scriptable System Attached");
-    //}
+    private func OnAttach() -> Void
+    {
+        //This is used to detect if ArchiveXL is installed
+        //If it isn't, it will simply crash, then get detected by the userHints
+        let archiveXLVersion: String = ArchiveXL.Version();
+        if(this.enableArchiveXLDebugLog)
+        {
+            LogChannel(n"DEBUG","[VehicleSecurityRework] ArchiveXL Version : " + archiveXLVersion);
+        }
+    }
 
     //Called by the game when the scriptable system is removed
     //private func OnDetach() -> Void

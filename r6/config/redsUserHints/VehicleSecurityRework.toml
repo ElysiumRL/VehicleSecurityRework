@@ -1,21 +1,25 @@
-[[UNRESOLVED_REF]]
-id = "MISSING_TWEAKXL"
-span_starts_with  = "TweakDBManager"
-message = "TweakXL not found. Make sure it is installed properly."
-
 [[UNRESOLVED_TYPE]]
-id = "MISSING_TWEAKXL"
-file = "VehicleSecurityRework/Vehicle/VehicleExtensions.reds"
-line_contains  = "ScriptableTweak"
-message = "TweakXL not found. Make sure it is installed properly."
+id = "MISSING_CUSTOM_HACKING_SYSTEM"
+file = "VehicleSecurityRework/Quickhacks/VehicleDeviceActions.reds"
+line_contains  = "CustomHackingSystem"
+message = "VehicleSecurityRework depends on CustomHackingSystem but it seems you don't have it installed. Make sure it is installed properly"
 
 [[UNRESOLVED_METHOD]]
 id = "MISSING_TWEAKXL"
-file = "VehicleSecurityRework/Vehicle/VehicleExtensions.reds"
-line_contains  = "GetFlat"
-message = "TweakXL not found. Make sure it is installed properly."
+line_contains  = "TweakDBInterface"
+message = "TweakXL mod not found. Try to reinstall it and make sure you have the latest version of the game."
 
-[[UNRESOLVED_TYPE]]
-id = "MISSING_CUSTOM_HACKING_SYSTEM"
-line_contains  = "CustomHackingSystem"
-message = "CustomHackingSystem not found. Make sure the latest version and it's dependencies are correctly installed."
+[[UNRESOLVED_METHOD]]
+id = "MISSING_TWEAKXL"
+line_contains  = "TweakDBManager"
+message = "TweakXL mod not found. Try to reinstall it and make sure you have the latest version of the game."
+
+[[UNRESOLVED_REF]]
+id = "MISSING_MOD_SETTINGS"
+line_contains  = "ModSettings"
+message = "ModSettings mod not found. Try to reinstall it and make sure you have the latest version of the game."
+
+[[UNRESOLVED_REF]]
+id = "MISSING_ARCHIVE_XL"
+line_contains  = "ArchiveXL"
+message = "ArchiveXL mod not found. Try to reinstall it and make sure you have the latest version of the game."

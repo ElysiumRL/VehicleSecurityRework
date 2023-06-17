@@ -18,9 +18,6 @@ import HackingExtensions.Programs.*
 @if(ModuleExists("CustomHackingSystem.Tools"))
 import CustomHackingSystem.Tools.*
 
-//Source code : https://github.com/ElysiumRL/VehicleSecurityRework
-//Discord : Elysium#7743 (if you want to DM for anything)
-
 //Class used for keybind events
 public class GlobalInputListener
 {
@@ -112,6 +109,7 @@ private let m_VehicleSecurityInteractionUpdater: ref<InteractionUpdate>;
 protected cb func OnGameAttached() -> Bool 
 {
     wrappedMethod();
+
     //Setup Input listener
     this.m_VehicleSecurityInputListener = new GlobalInputListener();
     this.m_VehicleSecurityInputListener.gameInstance = this.GetGame();
@@ -126,7 +124,7 @@ protected cb func OnGameAttached() -> Bool
     let hackSystem:ref<CustomHackingSystem> = container.Get(n"HackingExtensions.CustomHackingSystem") as CustomHackingSystem;
     hackSystem.AddProgramAction(t"MinigameProgramAction.UnlockVehicle", new UnlockVehicleProgramAction());
     
-    if !this.IsReplacer() 
+    if (!this.IsReplacer())
     {	
         //Begin tick update
         let tickEvent:ref<TickUpdate> = new TickUpdate();
