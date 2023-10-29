@@ -16,7 +16,7 @@ function Quickhack.Generate()
 
 	local remoteBreachInteraction = Quickhack.API.CreateInteractionUI("RemoteSecurityBreach",LocKey(3652001),LocKey(3652002),remoteSecurityBreachIcon)
 	local remoteBreachCost = Quickhack.API.CreateQuickhackMemoryStatModifier("RemoteSecurityBreach","BaseCost","Additive",3.00)
-	local remoteBreachQuickhack = Quickhack.API.CreateRemoteBreachQuickhack("RemoteSecurityBreach",quickhackCategory,remoteBreachInteraction,remoteBreachCost,15.00)
+	local remoteBreachQuickhack = Quickhack.API.CreateRemoteBreachQuickhack("RemoteSecurityBreach",quickhackCategory,remoteBreachInteraction,remoteBreachCost,8.00)
 
 	local explodeVehicleInteraction = Quickhack.API.CreateInteractionUI("ExplodeVehicle",LocKey(3652007),LocKey(3652008),explodeIcon)
 	local explodeVehicleCost = Quickhack.API.CreateQuickhackMemoryStatModifier("ExplodeVehicle","BaseCost","Additive",12.00)
@@ -34,7 +34,7 @@ function Quickhack.Generate()
 	local distractVehicleQuickhack = Quickhack.API.CreateQuickhack("VehicleDistraction",quickhackCategory,"Interactions.MalfunctionHack",distractVehicleCost,0.00,0.5)
 
 	local autoHackInteraction = Quickhack.API.CreateInteractionUI("AutoHack",LocKey(3652016),LocKey(3652017),remoteSecurityBreachIcon)
-	local autoHackCost = Quickhack.API.CreateQuickhackMemoryStatModifier("AutoHack","BaseCost","Additive",8.00)
+	local autoHackCost = Quickhack.API.CreateQuickhackMemoryStatModifier("AutoHack","BaseCost","Additive",24.00)
 	local autoHackQuickhack = Quickhack.API.CreateQuickhack("AutoHack",quickhackCategory,autoHackInteraction,autoHackCost,0.00,4.00)
 
 	--#endregion

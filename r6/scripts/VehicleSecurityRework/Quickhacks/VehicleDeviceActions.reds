@@ -6,29 +6,11 @@ public class UnlockSecurityDeviceAction extends CustomAccessBreach
 {
 }
 
-public class OverloadVehicleDeviceAction extends ActionBool
-{
-    public final func SetProperties() -> Void
-    {
-        this.actionName = n"OverloadVehicle";
-        this.prop = DeviceActionPropertyFunctions.SetUpProperty_Bool(this.actionName, true, this.actionName, this.actionName);
-    }
-}
-
 public class VehicleDistractionDeviceAction extends ActionBool
 {
     public final func SetProperties() -> Void
     {
         this.actionName = n"VehicleDistraction";
-        this.prop = DeviceActionPropertyFunctions.SetUpProperty_Bool(this.actionName, true, this.actionName, this.actionName);
-    }
-}
-
-public class VehicleForceBrakesDeviceAction extends ActionBool
-{
-    public final func SetProperties() -> Void
-    {
-        this.actionName = n"VehicleForceBrakesDevice";
         this.prop = DeviceActionPropertyFunctions.SetUpProperty_Bool(this.actionName, true, this.actionName, this.actionName);
     }
 }
@@ -81,7 +63,6 @@ private final const func ActionVehicleDistraction() -> ref<VehicleDistractionDev
     action.SetCanTriggerStim(true);
 
     action.SetObjectActionID(t"DeviceAction.VehicleDistraction");
-
     let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
     let customHackSystem: ref<CustomHackingSystem> = container.Get(n"HackingExtensions.CustomHackingSystem") as CustomHackingSystem;
     customHackSystem.RegisterDeviceAction(action);
@@ -111,25 +92,6 @@ private final const func ActionVehicleAutoHack() -> ref<AutoHackVehicleDeviceAct
 }
 
 @addMethod(VehicleComponentPS)
-private final const func ActionVehicleForceBrakes() -> ref<VehicleForceBrakesDeviceAction> 
-{
-    let action: ref<VehicleForceBrakesDeviceAction> = new VehicleForceBrakesDeviceAction();
-    action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
-    action.SetUp(this);
-    action.SetProperties();
-    action.AddDeviceName(this.m_deviceName);
-    action.SetObjectActionID(t"DeviceAction.ForceBrakes");
-
-    let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
-    let customHackSystem: ref<CustomHackingSystem> = container.Get(n"HackingExtensions.CustomHackingSystem") as CustomHackingSystem;
-    customHackSystem.RegisterDeviceAction(action);
-    action.CreateInteraction();
-    action.SetDurationValue(10.0);
-
-    return action;
-}
-
-@addMethod(VehicleComponentPS)
 private final const func ActionVehicleRecklessDriving() -> ref<VehicleRecklessDrivingDeviceAction> 
 {
     let action: ref<VehicleRecklessDrivingDeviceAction> = new VehicleRecklessDrivingDeviceAction();
@@ -149,23 +111,6 @@ private final const func ActionVehicleRecklessDriving() -> ref<VehicleRecklessDr
 }
 
 @addMethod(VehicleComponentPS)
-private final const func ActionOverloadVehicle() -> ref<OverloadVehicleDeviceAction> 
-{
-    let action: ref<OverloadVehicleDeviceAction> = new OverloadVehicleDeviceAction();
-    action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
-    action.SetUp(this);
-    action.SetProperties();
-    action.AddDeviceName(this.m_deviceName);
-    action.SetObjectActionID(t"DeviceAction.ExplodeVehicle");
-    
-    let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
-    let customHackSystem: ref<CustomHackingSystem> = container.Get(n"HackingExtensions.CustomHackingSystem") as CustomHackingSystem;
-    customHackSystem.RegisterDeviceAction(action);
-    action.CreateInteraction();
-    return action;
-}
-
-@addMethod(VehicleComponentPS)
 protected cb func OnActionVehicleDistraction(evt:ref<VehicleDistractionDeviceAction>) -> EntityNotificationType 
 {
     if (!this.m_distractExecuted)
@@ -177,12 +122,12 @@ protected cb func OnActionVehicleDistraction(evt:ref<VehicleDistractionDeviceAct
         //evt.SetObjectActionID(t"DeviceAction.EndMalfunction");
         //this.ExecutePSActionWithDelay(evt, this, evt.GetDurationValue());
         this.GetOwnerEntity().Distract();
-        this.GetOwnerEntity().ToggleHornForDuration(evt.GetDurationValue());
+        this.GetOwnerEntity().GetVehicleComponent().PlayHonkForDuration(evt.GetDurationValue());
         let visualDistraction: ref<VehicleDistractionVisual> = new VehicleDistractionVisual();
         this.GetOwnerEntity().QueueEvent(visualDistraction);
 
         //Here
-        this.GetOwnerEntity().ShowQuickHackDuration(evt);
+        //this.GetOwnerEntity().ShowQuickHackDuration(evt);
     }
     else
     {
@@ -208,8 +153,8 @@ protected final func Distract() -> Void
         investigate.investigateController = true;
         investigate.mainDeviceEntity = this;
         investigate.revealsInstigatorPosition = false;
-        investigate.attackInstigator = this.GetPlayerMainObject();
-        investigate.attackInstigatorPosition = this.GetPlayerMainObject().GetWorldPosition();
+        //investigate.attackInstigator = this.GetPlayerMainObject();
+        //investigate.attackInstigatorPosition = this.GetPlayerMainObject().GetWorldPosition();
         broadcaster.TriggerSingleBroadcast(this, gamedataStimType.Distract,20.00,investigate);
         broadcaster.TriggerSingleBroadcast(this, gamedataStimType.Alarm,20.00,investigate);
         broadcaster.TriggerSingleBroadcast(this, gamedataStimType.SoundDistraction,20.00,investigate);
@@ -254,52 +199,6 @@ protected cb func OnDistractionVisual(evt:ref<VehicleDistractionVisual>) -> Bool
         let visualDistraction:ref<VehicleDistractionVisual> = new VehicleDistractionVisual();
         GameInstance.GetDelaySystem(this.GetGame()).DelayEvent(this, visualDistraction, RandRangeF(0.15,0.75), true);
     }
-}
-
-@addMethod(VehicleComponentPS)
-protected cb func OnActionOverloadVehicle(evt:ref<OverloadVehicleDeviceAction>) -> EntityNotificationType 
-{
-    //Version to get cops on you
-    //this.GetOwnerEntity().GetVehicleComponent().ExplodeVehicle(this.GetOwnerEntity().GetPlayerMainObject());
-    this.GetOwnerEntity().GetVehicleComponent().ExplodeVehicle(this.GetOwnerEntity());
-    this.SetIsDestroyed(true);
-    return EntityNotificationType.DoNotNotifyEntity;
-}
-
-
-//Super important : If you use the ShowQuickHackDuration() it will re queue the event you call on duration end
-@addMethod(VehicleComponentPS)
-protected cb func OnForceBrakesVehicle(evt:ref<VehicleForceBrakesDeviceAction>) -> EntityNotificationType 
-{
-    if !this.quickhackForceBrakesExecuted
-    {
-        this.GetOwnerEntity().ForceBrakesFor(evt.GetDurationValue());
-        this.GetOwnerEntity().ForceBrakesDrivingBehavior();
-        this.quickhackForceBrakesExecuted = true;
-        let endEvt: ref<EndForceBrakes> = new EndForceBrakes();
-        this.QueuePSEventWithDelay(this, endEvt, evt.GetDurationValue());
-        this.GetOwnerEntity().ShowQuickHackDuration(evt);
-    }
-    else
-    {
-        this.quickhackForceBrakesExecuted = false;		
-        this.GetOwnerEntity().ResetDrivingBehavior();
-    }
-    return EntityNotificationType.DoNotNotifyEntity;
-}
-
-public class EndForceBrakes extends Event
-{
-
-}
-
-@addMethod(VehicleObject)
-private final func ForceBrakesDrivingBehavior() -> Void 
-{
-    //this.ResetReactionSequenceOfAllPassengers();
-    this.m_drivingTrafficPattern = n"stop";
-    //LogChannel(n"DEBUG","Has Changed the move type : " + ToString(this.m_crowdMemberComponent.ChangeMoveType(this.m_drivingTrafficPattern)));
-    this.ResetTimesSentReactionEvent();
 }
 
 //So I can't fix it for some reason
@@ -350,13 +249,6 @@ private final func ResetDrivingBehavior() -> Void
     //GameInstance.GetDelaySystem(this.GetGame()).DelayEvent(this, this.m_reactionTriggerEvent, 0.00);
 }
 
-
-@addMethod(VehicleComponentPS)
-protected cb func OnEndForceBrakes(evt:ref<EndForceBrakes>) -> Void
-{
-    this.quickhackForceBrakesExecuted = false;
-}
-
 //There are very weird interactions with panic driving and especially this behaviour not acting properly
 @addMethod(VehicleObject)
 protected cb func OnRecklessDriving(evt:ref<VehicleRecklessDrivingDeviceAction>) -> EntityNotificationType
@@ -372,7 +264,7 @@ protected cb func OnRecklessDriving(evt:ref<VehicleRecklessDrivingDeviceAction>)
         commandEvent.timeToLive = evt.GetDurationValue();
         this.QueueEvent(commandEvent);
 
-        this.ShowQuickHackDuration(evt);
+        //this.ShowQuickHackDuration(evt);
         this.RecklessDrivingBehavior();
         this.GetVehiclePS().quickhackRecklessDrivingExecuted = true;
         this.GetVehiclePS().CanTriggerRecklessDriving = false;
@@ -424,4 +316,3 @@ protected cb func OnAutoHackVehicle(evt:ref<AutoHackVehicleDeviceAction>) -> Ent
     this.SetIsStolen(true);	
     this.UnlockAllVehDoors();
 }
-

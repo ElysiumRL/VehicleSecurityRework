@@ -12,7 +12,6 @@ private func CreateInteractionChoice(action: CName, title: String, opt holdButto
 	choiceData.inputAction = action;
 	choiceData.isHoldAction = holdButton;
 	let choiceType: ChoiceTypeWrapper;
-	//ChoiceTypeWrapper.SetType(choiceType, gameinteractionsChoiceType.Inactive);
 	ChoiceTypeWrapper.SetType(choiceType, gameinteractionsChoiceType.Blueline);
 	choiceData.type = choiceType;
 	return choiceData;
@@ -26,7 +25,6 @@ private func CreateLockedInteractionChoice(action: CName, title: String, opt hol
 	choiceData.isHoldAction = holdButton;
 	let choiceType: ChoiceTypeWrapper;
 	ChoiceTypeWrapper.SetType(choiceType, gameinteractionsChoiceType.Inactive);
-	//ChoiceTypeWrapper.SetType(choiceType, gameinteractionsChoiceType.Blueline);
 	choiceData.type = choiceType;
 	return choiceData;
 }

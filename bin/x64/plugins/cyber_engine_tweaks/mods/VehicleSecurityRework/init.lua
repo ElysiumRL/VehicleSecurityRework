@@ -21,9 +21,11 @@ function VehicleSecurityRework:new()
 
 		quickhacks.Generate()
 
+		--print("[VehicleSecurityRework] Quickhacks TDBIDs Generated")
+
 		--#region Vehicle Combat Compatibility
 
-		ObserveAfter('VehicleSecurityRework.Hack.UnlockVehicleProgramAction','ExecuteProgramFailure',function (self)
+--[[		ObserveAfter('VehicleSecurityRework.Hack.UnlockVehicleProgramAction','ExecuteProgramFailure',function (self)
 			local systemSettings = Game.GetScriptableSystemsContainer():Get("VehicleSecurityRework.Settings.VehicleSecurityRework")
 			if systemSettings.vehicleCombatCompatibility then
 				---@type VehicleComponentPS
@@ -67,7 +69,7 @@ function VehicleSecurityRework:new()
 				end
 			end
 		end)
-
+--]]
 	end)
 
 end

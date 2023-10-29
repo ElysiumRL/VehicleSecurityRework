@@ -6,7 +6,6 @@ import TargetingExtensions.*
 
 
 //Requires CustomHackingSystem
-
 @if(ModuleExists("HackingExtensions"))
 import HackingExtensions.*
 @if(ModuleExists("HackingExtensions.Programs"))
@@ -14,30 +13,45 @@ import HackingExtensions.Programs.*
 @if(ModuleExists("CustomHackingSystem.Tools"))
 import CustomHackingSystem.Tools.*
 
-//Source code : https://github.com/ElysiumRL/VehicleSecurityRework
-//Discord : Elysium#7743 (if you want to DM for anything)
+// Small tuple used to store the affiliation data in the CName dictionary (in the class VehicleSecurityRework)
+// This will then be used to fill the affiliation data to the vehicles when being created
+public class VehicleAffiliationTuple extends IScriptable
+{
+    public let affiliationTweakDBID : TweakDBID;
+    public let affiliationString: String;
 
+    public static func Build(tweakDBID : TweakDBID,string : String) -> ref<VehicleAffiliationTuple>
+    {
+        let instance: ref<VehicleAffiliationTuple> = new VehicleAffiliationTuple();
+        instance.affiliationTweakDBID = tweakDBID;
+        instance.affiliationString = string;
+        return instance;
+    }
+}
 
 //TweakXL : Add (as much as possible) factions to all vehicle records
 public class AddVehicleAffiliation extends ScriptableTweak
 {
     //Strings of all factions in the game
-    let affiliationList: ref<StringHashMap>;
+    let affiliationList: ref<CNameIScriptableDictionary>;
 
     //Finds all existing Affiliations (factions) and store their names (as String)
     public func GenerateAffiliations() -> Void
     {
-        this.affiliationList = new StringHashMap();
+        if(!IsDefined(this.affiliationList))
+        {
+            this.affiliationList = new CNameIScriptableDictionary();
+        }
         //Get all factions
         for affiliation in TweakDBInterface.GetRecords(n"Affiliation")
         {
             //Get their names
-            let name:CName = TweakDBInterface.GetAffiliationRecord(affiliation.GetID()).EnumName();
+            let name: CName = TweakDBInterface.GetAffiliationRecord(affiliation.GetID()).EnumName();
             //Insert their names to the "dictionary"
-            this.affiliationList.Insert(NameToString(name),affiliation);
+            this.affiliationList.Insert(name,affiliation);
         }
         //Extra insert because CDPR made some spelling mistakes on some records
-        this.affiliationList.Insert(NameToString(n"Aldecados"),TweakDBInterface.GetAffiliationRecord(t"Factions.Aldecaldos"));
+        this.affiliationList.Insert(n"Aldecados",TweakDBInterface.GetAffiliationRecord(t"Factions.Aldecaldos"));
     }
     
     public func ApplyAffiliationsToVehicles() -> Void
@@ -53,10 +67,10 @@ public class AddVehicleAffiliation extends ScriptableTweak
                 let vehicleVisualTag:CName = vehicleVisualTags[0];
                 
                 //Look if the visual tag matches one of the factions
-                if this.affiliationList.KeyExist(NameToString(vehicleVisualTag))
+                if (this.affiliationList.KeyExists(vehicleVisualTag))
                 {
                     //Apply faction to vehicle
-                    let affiliationToApply:ref<Affiliation_Record> = this.affiliationList.Get(NameToString((vehicleVisualTag))) as Affiliation_Record;
+                    let affiliationToApply:ref<Affiliation_Record> = this.affiliationList.Get(vehicleVisualTag) as Affiliation_Record;
                     TweakDBManager.SetFlat(vehicleRecord.GetID() + t".affiliation",affiliationToApply.GetID());
                 }
             }
@@ -100,6 +114,7 @@ public func CanHackTargetedVehicle(gameInstance:GameInstance,out ps:ref<VehicleC
     return false;
 }
 
+
 @addField(VehicleComponentPS)
 protected persistent let isSecurityHardened : Bool = false;
 
@@ -118,11 +133,18 @@ public let quickhackRecklessDrivingExecuted:Bool = false;
 @addField(VehicleComponentPS)
 public let CanTriggerRecklessDriving:Bool = true;
 
+@addField(VehicleComponentPS)
+public let VehicleSecurityReworkSingleton: ref<VehicleSecurityRework>;
+
 @addField(VehicleObject)
 public let AffiliationOverride : TweakDBID = t"";
 
 @addField(VehicleObject)
 public let AffiliationOverrideString : String = "";
+
+@addField(VehicleObject)
+public let VehicleSecurityReworkSingleton: ref<VehicleSecurityRework>;
+
 
 //Returns the tweakDBID path of the minigame used to unlock the vehicle
 @addMethod(VehicleComponentPS)
@@ -146,6 +168,26 @@ public func GetVehicleHackDBDifficulty() -> TweakDBID
     return t"CustomHackingSystemMinigame.UnlockVehicleEasy";
 }
 
+@addMethod(VehicleObject)
+public func GetPreventionResponseDifficulty() -> Int32
+{	
+    let crackLockDifficulty : String = this.GetVehiclePS().GetVehicleCrackLockDifficulty();
+
+    if(Equals(crackLockDifficulty, "MEDIUM"))
+    {
+        return this.VehicleSecurityReworkSingleton.basePoliceStarLevelMedium;
+    }
+    if(Equals(crackLockDifficulty, "HARD"))
+    {
+        return this.VehicleSecurityReworkSingleton.basePoliceStarLevelHard;
+    }
+    if(Equals(crackLockDifficulty, "IMPOSSIBLE"))
+    {
+        return this.VehicleSecurityReworkSingleton.basePoliceStarLevelVeryHard;
+    }
+
+    return this.VehicleSecurityReworkSingleton.basePoliceStarLevelEasy;
+}
 
 @addMethod(VehicleComponentPS)
 public func IsVehicleSecurityBreached() -> Bool
@@ -239,11 +281,6 @@ protected func GameAttached() -> Void
 {
     wrappedMethod();
 
-    //this.m_canHandleAdvancedInteraction = true;
-    //this.m_forceResolveStateOnAttach = true;
-    //this.m_exposeQuickHacks = true;
-    //this.RefreshSkillchecks();
-
     //Add quickhack vunerabilities (in the details scanner panel)
     //This is cosmetic, it doesn't influence available quichacks
     this.InitializeQuickHackVulnerabilities();
@@ -256,7 +293,7 @@ protected func GameAttached() -> Void
     this.AddQuickHackVulnerability(t"DeviceAction.RecklessDriving");
 
     let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
-    let params:ref<VehicleSecurityRework> = container.Get(n"VehicleSecurityRework.Settings.VehicleSecurityRework") as VehicleSecurityRework;
+    this.VehicleSecurityReworkSingleton = container.Get(n"VehicleSecurityRework.Settings.VehicleSecurityRework") as VehicleSecurityRework;
     //Ignore the hack part if it's not needed (or already hacked previously)
     if 
     (
@@ -264,7 +301,7 @@ protected func GameAttached() -> Void
         || this.GetIsStolen() 
         || this.IsMarkedAsQuest() 
         || this.m_isVehicleHacked
-        || params.forceSecurityUnlock)
+        || this.VehicleSecurityReworkSingleton.forceSecurityUnlock)
     {
         this.UnlockHackedVehicle();
     }
@@ -275,120 +312,44 @@ protected func GameAttached() -> Void
 protected cb func OnGameAttached() -> Bool 
 {
     wrappedMethod();
+
+    let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGame());
+    this.VehicleSecurityReworkSingleton = container.Get(n"VehicleSecurityRework.Settings.VehicleSecurityRework") as VehicleSecurityRework;
+
     //Force the affiliation based on appearance name
-    //So sadly since tweakDB editing isn't enough... Gotta have to do this for every faction (or at least as much as possible)
+    //So sadly since tweakDB editing isn't enough (because some vehicles with the faction appearance aren't registered)
+    //I have to search inside the appearance name if it's tied to a faction
+    //Since the majority of the vehicles aren't tied to a faction (and because theres a lot of string search), it's a bit not optimized...
     if Equals(this.GetRecord().Affiliation().Type(),gamedataAffiliation.Unaffiliated)
     {
-        let appearanceName:String = NameToString(this.GetCurrentAppearanceName());
-        
-        if StrContains(appearanceName,"tyger")
-        {
-            this.AffiliationOverride = t"Factions.TygerClaws";
-            this.AffiliationOverrideString = "Factions.TygerClaws";
-            return true;
-        }
+        this.SetVehicleAffiliationFromAppearance(this.GetCurrentAppearanceName());
+    }
+    return true;
+}
 
-        if StrContains(appearanceName,"animals")
-        {
-            this.AffiliationOverride = t"Factions.Animals";
-            this.AffiliationOverrideString = "Factions.Animals";
-            return true;
-        }
-        
-        if StrContains(appearanceName,"6th")
-        {
-            this.AffiliationOverride = t"Factions.SixthStreet";
-            this.AffiliationOverrideString = "Factions.SixthStreet";
-            return true;
-        }
-        
-        if StrContains(appearanceName,"arasaka")
-        {
-            this.AffiliationOverride = t"Factions.TygerClaws";
-            this.AffiliationOverrideString = "Factions.TygerClaws";
-            return true;
-        }
+@addMethod(VehicleObject)
+public func SetVehicleAffiliationFromAppearance(appearanceName : CName) -> Void
+{
+    let appearanceNameAsString: String = NameToString(appearanceName);
+    let allDefinedKeys: array<String> = this.VehicleSecurityReworkSingleton.vehicleAffiliations.GetKeys();
 
-        if StrContains(appearanceName,"maelstrom")
+    let i:Int32 = 0;
+    while(i < ArraySize(allDefinedKeys))
+    {
+        if(StrContains(appearanceNameAsString,allDefinedKeys[i]))
         {
-            this.AffiliationOverride = t"Factions.Maelstrom";
-            this.AffiliationOverrideString = "Factions.Maelstrom";
-            return true;
+            let affiliationData : ref<VehicleAffiliationTuple> = (this.VehicleSecurityReworkSingleton.vehicleAffiliations.Get(allDefinedKeys[i])) as VehicleAffiliationTuple;
+            if(IsDefined(affiliationData))
+            {
+                this.AffiliationOverride = affiliationData.affiliationTweakDBID;
+                this.AffiliationOverrideString = affiliationData.affiliationString;
+                return;
+            }
         }
-
-        if StrContains(appearanceName,"valentinos")
-        {
-            this.AffiliationOverride = t"Factions.Valentinos";
-            this.AffiliationOverrideString = "Factions.Valentinos";
-            return true;
-        }
-
-        if StrContains(appearanceName,"aldecaldos") || StrContains(appearanceName,"aldecados")
-        {
-            this.AffiliationOverride = t"Factions.Aldecaldos";
-            this.AffiliationOverrideString = "Factions.Aldecaldos";
-            return true;
-        }
-            
-        if StrContains(appearanceName,"netwatch")
-        {
-            this.AffiliationOverride = t"Factions.NetWatch";
-            this.AffiliationOverrideString = "Factions.NetWatch";
-            return true;
-        }
-        
-        if StrContains(appearanceName,"militech")
-        {
-            this.AffiliationOverride = t"Factions.Militech";
-            this.AffiliationOverrideString = "Factions.Militech";
-            return true;
-        }
-
-        if StrContains(appearanceName,"wraiths")
-        {
-            this.AffiliationOverride = t"Factions.Wraiths";
-            this.AffiliationOverrideString = "Factions.Wraiths";
-            return true;
-        }
-
-        if StrContains(appearanceName,"mox")
-        {
-            this.AffiliationOverride = t"Factions.TheMox";
-            this.AffiliationOverrideString = "Factions.TheMox";
-            return true;
-        }
-        
-        //---------
-
-        if StrContains(appearanceName,"trama_team") || StrContains(appearanceName,"trauma")
-        {
-            this.AffiliationOverride = t"Factions.TraumaTeam";
-            this.AffiliationOverrideString = "Factions.TraumaTeam";
-            return true;
-        }
-        
-        if StrContains(appearanceName,"ncpd")
-        {
-            this.AffiliationOverride = t"Factions.NCPD";
-            this.AffiliationOverrideString = "Factions.NCPD";
-            return true;
-        }
-        
-        if StrContains(appearanceName,"news")
-        {
-            this.AffiliationOverride = t"Factions.News54";
-            this.AffiliationOverrideString = "Factions.News54";
-            return true;
-        }
-        
-        if StrContains(appearanceName,"kangtao")
-        {
-            this.AffiliationOverride = t"Factions.KangTao";
-            this.AffiliationOverrideString = "Factions.KangTao";
-            return true;
-        }
+        i += 1;
     }
 }
+
 
 
 //Add the vulnerabilities & vehicle faction to the scanner
@@ -607,4 +568,92 @@ public final func DetermineActionsToPush(interaction: ref<InteractionComponent>,
     i = 0;
 
     this.PushActionsToInteractionComponent(interaction, choices, context);
+}
+
+@replaceMethod(VehicleObject)
+public const func GetDefaultHighlight() -> ref<FocusForcedHighlightData>
+{
+    if this.IsDestroyed() || this.IsPlayerMounted()
+	{
+    	return null;
+    }
+
+    if this.m_scanningComponent.IsBraindanceBlocked() || this.m_scanningComponent.IsPhotoModeBlocked()
+	{
+    	return null;
+    }
+
+    let highlight: ref<FocusForcedHighlightData> = new FocusForcedHighlightData();
+    highlight.outlineType = this.GetCurrentOutline(); 
+    highlight.sourceID = this.GetEntityID();
+    highlight.sourceName = this.GetClassName();
+
+	if Equals(highlight.outlineType, EFocusOutlineType.INVALID)
+	{
+    	return null;
+    }
+    if Equals(highlight.outlineType, EFocusOutlineType.QUEST)
+	{
+    	highlight.highlightType = EFocusForcedHighlightType.QUEST;
+    }
+	else
+	{
+    	if (Equals(highlight.outlineType, EFocusOutlineType.HACKABLE))
+		{
+    		highlight.highlightType = EFocusForcedHighlightType.HACKABLE;
+    	}
+		if (Equals(highlight.outlineType, EFocusOutlineType.HOSTILE))
+		{
+    		highlight.highlightType = EFocusForcedHighlightType.HOSTILE;
+    	}
+    }
+    if (highlight != null)
+	{
+    	if (this.IsNetrunner())
+		{
+    		highlight.patternType = VisionModePatternType.Netrunner;
+    	}
+		else
+		{
+    		highlight.patternType = VisionModePatternType.Default;
+    	}
+    }
+
+    return highlight;
+}
+
+@replaceMethod(VehicleObject)
+public const func GetCurrentOutline() -> EFocusOutlineType
+{
+	let outlineType: EFocusOutlineType;
+
+	if (this.IsDestroyed())
+	{
+		return EFocusOutlineType.INVALID;
+	}
+	if (this.IsQuest())
+	{
+		outlineType = EFocusOutlineType.QUEST;
+	}
+	else
+	{
+		if (this.VehicleSecurityReworkSingleton.enableHighlights)
+		{
+			if (this.GetVehiclePS().isSecurityHardened || !(IsDefined(this as CarObject) || IsDefined(this as BikeObject)) || this.GetVehiclePS().m_playerVehicle)
+			{
+				//Hostile = red highlight
+				outlineType = EFocusOutlineType.HOSTILE;
+			}
+			else
+			{
+				//Hackable = green highlight
+				outlineType = EFocusOutlineType.HACKABLE;
+			}
+		}
+		else
+		{
+			outlineType = EFocusOutlineType.INVALID;
+		}
+	}
+	return outlineType;
 }

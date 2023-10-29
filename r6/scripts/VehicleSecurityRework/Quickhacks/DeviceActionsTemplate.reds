@@ -108,6 +108,6 @@ protected cb func OnActionPing(evt:ref<PingDevice>) -> EntityNotificationType
 @addMethod(VehicleComponentPS)
 protected cb func OnActionQuickhackTemplateDevice(evt:ref<QuickhackTemplateDevice>) -> EntityNotificationType 
 {
-    this.GetOwnerEntity().GetVehicleComponent().ExplodeVehicle(this.GetOwnerEntity().GetPlayerMainObject());
+    //this.GetOwnerEntity().GetVehicleComponent().ExplodeVehicle(this.GetOwnerEntity().GetPlayerMainObject());
     return EntityNotificationType.DoNotNotifyEntity;
 }
