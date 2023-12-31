@@ -15,20 +15,29 @@ public class VehicleDistractionDeviceAction extends ActionBool
     }
 }
 
-public class VehicleRecklessDrivingDeviceAction extends ActionBool
-{
-    public final func SetProperties() -> Void
-    {
-        this.actionName = n"VehicleRecklessDriving";
-        this.prop = DeviceActionPropertyFunctions.SetUpProperty_Bool(this.actionName, true, this.actionName, this.actionName);
-    }
-}
-
 public class AutoHackVehicleDeviceAction extends ActionBool
 {
     public final func SetProperties() -> Void
     {
         this.actionName = n"AutoHack";
+        this.prop = DeviceActionPropertyFunctions.SetUpProperty_Bool(this.actionName, true, this.actionName, this.actionName);
+    }
+}
+
+public class PopTireVehicleDeviceAction extends ActionBool
+{
+    public final func SetProperties() -> Void
+    {
+        this.actionName = n"PopTire";
+        this.prop = DeviceActionPropertyFunctions.SetUpProperty_Bool(this.actionName, true, this.actionName, this.actionName);
+    }
+}
+
+public class RepairVehicleTiresDeviceAction extends ActionBool
+{
+    public final func SetProperties() -> Void
+    {
+        this.actionName = n"RepairTires";
         this.prop = DeviceActionPropertyFunctions.SetUpProperty_Bool(this.actionName, true, this.actionName, this.actionName);
     }
 }
@@ -92,22 +101,128 @@ private final const func ActionVehicleAutoHack() -> ref<AutoHackVehicleDeviceAct
 }
 
 @addMethod(VehicleComponentPS)
-private final const func ActionVehicleRecklessDriving() -> ref<VehicleRecklessDrivingDeviceAction> 
+private final const func ActionVehiclePopTire() -> ref<PopTireVehicleDeviceAction> 
 {
-    let action: ref<VehicleRecklessDrivingDeviceAction> = new VehicleRecklessDrivingDeviceAction();
+    let action: ref<PopTireVehicleDeviceAction> = new PopTireVehicleDeviceAction();
     action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
     action.SetUp(this);
     action.SetProperties();
     action.AddDeviceName(this.m_deviceName);
-    action.SetObjectActionID(t"DeviceAction.RecklessDriving");
+    action.SetObjectActionID(t"DeviceAction.VehiclePopTire");
 
     let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
     let customHackSystem: ref<CustomHackingSystem> = container.Get(n"HackingExtensions.CustomHackingSystem") as CustomHackingSystem;
     customHackSystem.RegisterDeviceAction(action);
     action.CreateInteraction();
-    action.SetDurationValue(10.0);
 
     return action;
+}
+
+@addMethod(VehicleComponentPS)
+private final const func ActionVehicleRepairTires() -> ref<RepairVehicleTiresDeviceAction> 
+{
+    let action: ref<RepairVehicleTiresDeviceAction> = new RepairVehicleTiresDeviceAction();
+    action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
+    action.SetUp(this);
+    action.SetProperties();
+    action.AddDeviceName(this.m_deviceName);
+    action.SetObjectActionID(t"DeviceAction.RepairTires");
+
+    let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
+    let customHackSystem: ref<CustomHackingSystem> = container.Get(n"HackingExtensions.CustomHackingSystem") as CustomHackingSystem;
+    customHackSystem.RegisterDeviceAction(action);
+    action.CreateInteraction();
+
+    return action;
+}
+
+@addMethod(VehicleComponentPS)
+protected cb func OnVehiclePopTire(evt:ref<PopTireVehicleDeviceAction>) -> EntityNotificationType 
+{
+    let wheeledObject : ref<WheeledObject> = (this.GetOwnerEntity() as WheeledObject);
+    if (!IsDefined(wheeledObject))
+    {
+        return EntityNotificationType.DoNotNotifyEntity;
+    }
+    let wheelCount : Uint32 = wheeledObject.GetWheelCount();
+    
+    let i:Uint32 = 0u;
+    while (i < wheelCount)
+    {
+        if(!wheeledObject.IsTirePunctured(i))
+        {
+            if(VehicleComponent.HasActiveDriver(this.GetGameInstance(), this.GetOwnerEntity(), this.GetOwnerEntity().GetEntityID()))
+            {         
+        		let trafficCommand:ref<AIVehiclePanicCommand> = new AIVehiclePanicCommand();
+        		trafficCommand.needDriver = true;
+        		trafficCommand.useKinematic = true;
+                trafficCommand.ignoreTickets = false;
+                trafficCommand.allowSimplifiedMovement = false;
+                trafficCommand.tryDriveAwayFromPlayer = true;
+
+        		let commandExecuter:ref<AICommandEvent> = new AICommandEvent();
+        		commandExecuter.command = trafficCommand;
+        		commandExecuter.timeToLive = 8.0;
+            	this.GetOwnerEntity().QueueEvent(commandExecuter);
+            }
+            else
+            {
+                this.GetOwnerEntity().GetAIComponent().Toggle(false);
+                this.GetOwnerEntity().GetAIComponent().EnableCollider();
+
+                let worldImpulseLocation: Vector4 = this.GetOwnerEntity().GetWorldPosition();
+                let worldImpulseSide : Float = 1.0;
+                if(Cast<Int32>(i) % 2 != 0)
+                {
+                    worldImpulseSide = -1.0;
+                }
+                let physicalImpulseEvent: ref<PhysicalImpulseEvent> = new PhysicalImpulseEvent();
+                physicalImpulseEvent.radius = 5.00;
+                physicalImpulseEvent.worldPosition.X = worldImpulseLocation.X + 10.0 * worldImpulseSide;
+                physicalImpulseEvent.worldPosition.Y = worldImpulseLocation.Y;
+                physicalImpulseEvent.worldPosition.Z = worldImpulseLocation.Z + 0.50;
+                
+                let worldImpulse: Vector4 = this.GetOwnerEntity().GetWorldPosition();
+                worldImpulse = WorldTransform.GetRight(this.GetOwnerEntity().GetWorldTransform());
+                worldImpulse *= this.GetOwnerEntity().GetTotalMass() * 0.75;
+                physicalImpulseEvent.worldImpulse = Vector4.Vector4To3(worldImpulse);
+
+                this.GetOwnerEntity().QueueEvent(physicalImpulseEvent);
+            }
+            
+            let event : ref<VehicleToggleBrokenTireEvent> = new VehicleToggleBrokenTireEvent();
+            event.tireIndex = i;
+            event.toggle = true;
+            this.QueuePSEvent(this, event);
+            wheeledObject.ToggleBrokenTire(event.tireIndex, event.toggle);
+            this.GetOwnerEntity().ActivateTemporaryLossOfControl();
+
+            break;
+        }
+        i += 1u;
+    }
+}
+
+@addMethod(VehicleComponentPS)
+protected cb func OnVehicleRepairTires(evt:ref<RepairVehicleTiresDeviceAction>) -> EntityNotificationType 
+{
+    let wheeledObject : ref<WheeledObject> = (this.GetOwnerEntity() as WheeledObject);
+    if(!IsDefined(wheeledObject))
+    {
+        return EntityNotificationType.DoNotNotifyEntity;
+    }
+    let wheelCount : Uint32 = wheeledObject.GetWheelCount();
+    
+    let i:Uint32 = 0u;
+    while(i < wheelCount)
+    {
+        let event : ref<VehicleToggleBrokenTireEvent> = new VehicleToggleBrokenTireEvent();
+        event.tireIndex = i;
+        event.toggle = false;
+        this.QueuePSEvent(this, event);
+        wheeledObject.ToggleBrokenTire(event.tireIndex, event.toggle);
+        i += 1u;
+    }
 }
 
 @addMethod(VehicleComponentPS)
@@ -200,114 +315,6 @@ protected cb func OnDistractionVisual(evt:ref<VehicleDistractionVisual>) -> Bool
         GameInstance.GetDelaySystem(this.GetGame()).DelayEvent(this, visualDistraction, RandRangeF(0.15,0.75), true);
     }
 }
-
-//So I can't fix it for some reason
-@addMethod(VehicleObject)
-private final func RecklessDrivingBehavior() -> Void 
-{
-    //this.ResetReactionSequenceOfAllPassengers();
-    this.m_drivingTrafficPattern = n"panic";
-    this.m_crowdMemberComponent.ChangeMoveType(this.m_drivingTrafficPattern);
-    //this.ResetTimesSentReactionEvent();
-}
-
-//Same for this
-@addMethod(VehicleObject)
-private final func ResetDrivingBehavior() -> Void 
-{
-    if Equals(this.m_drivingTrafficPattern, n"stop") 
-    {
-        this.ResetReactionSequenceOfAllPassengers();
-    }
-    //else
-    //{
-    //    this.ResetReactionSequenceOfAllPassengers();
-    //}
-    this.m_drivingTrafficPattern = n"normal";
-    //LogChannel(n"DEBUG",ToString(this.m_crowdMemberComponent.ChangeMoveType(this.m_drivingTrafficPattern)));
-//	if !(this.m_crowdMemberComponent.ChangeMoveType(this.m_drivingTrafficPattern))
-//	{
-//		let trafficCommand:ref<AIVehicleJoinTrafficCommand> = new AIVehicleJoinTrafficCommand();
-//		trafficCommand.needDriver = false;
-//		trafficCommand.useKinematic = true;
-//
-//		let commandExecuter:ref<AICommandEvent> = new AICommandEvent();
-//		commandExecuter.command = trafficCommand;
-//		commandExecuter.timeToLive = 5.0;
-//    	this.QueueEvent(commandExecuter);
-//		this.ResetTimesSentReactionEvent();
-//		this.ResendHandleReactionEvent();
-//
-//	}
-//	else
-//	{
-//		//this.ResetTimesSentReactionEvent();
-//		//this.ResendHandleReactionEvent();
-//
-//	}
-
-    //GameInstance.GetDelaySystem(this.GetGame()).DelayEvent(this, this.m_reactionTriggerEvent, 0.00);
-}
-
-//There are very weird interactions with panic driving and especially this behaviour not acting properly
-@addMethod(VehicleObject)
-protected cb func OnRecklessDriving(evt:ref<VehicleRecklessDrivingDeviceAction>) -> EntityNotificationType
-{
-    if !this.GetVehiclePS().quickhackRecklessDrivingExecuted
-    {
-        let panicDrive: ref<AIVehiclePanicCommand> = new AIVehiclePanicCommand();
-        panicDrive.needDriver = false;
-        panicDrive.useKinematic = true;
-        
-        let commandEvent: ref<AICommandEvent> = new AICommandEvent();
-        commandEvent.command = panicDrive;
-        commandEvent.timeToLive = evt.GetDurationValue();
-        this.QueueEvent(commandEvent);
-
-        //this.ShowQuickHackDuration(evt);
-        this.RecklessDrivingBehavior();
-        this.GetVehiclePS().quickhackRecklessDrivingExecuted = true;
-        this.GetVehiclePS().CanTriggerRecklessDriving = false;
-
-    }
-    else
-    {
-        this.GetVehiclePS().quickhackRecklessDrivingExecuted = false;
-        //Potential fix for panic driving not ending
-        this.ResetDrivingBehavior();
-        
-        //let trafficCommand:ref<AIVehicleJoinTrafficCommand> = new AIVehicleJoinTrafficCommand();
-        //trafficCommand.needDriver = false;
-        //trafficCommand.useKinematic = true;
-
-        //let commandExecuter:ref<AICommandEvent> = new AICommandEvent();
-        //commandExecuter.command = trafficCommand;
-        //commandExecuter.timeToLive = 0.0;
-        //this.QueueEvent(commandExecuter);
-        
-        //this.m_drivingTrafficPattern = n"normal";
-        //
-        //this.m_fearInside = false;
-        //let vehicleReactionEvent = new HandleReactionEvent();
-        //vehicleReactionEvent.fearPhase = 0;
-        //let fakeStim: ref<StimuliEvent> = new StimuliEvent();
-        //vehicleReactionEvent.stimEvent = fakeStim;
-        //vehicleReactionEvent.stimEvent.sourceObject = this.GetPlayerMainObject();
-
-        //this.m_reactionTriggerEvent = vehicleReactionEvent;
-        //this.m_timesSentReactionEvent = 0;
-        //this.ResetDrivingBehavior();
-
-    }
-    return EntityNotificationType.DoNotNotifyEntity;
-}
-
-@addMethod(VehicleComponentPS)
-protected cb func OnRecklessDriving(evt:ref<VehicleRecklessDrivingDeviceAction>) -> EntityNotificationType 
-{
-    return EntityNotificationType.SendThisEventToEntity;
-}
-
 
 @addMethod(VehicleComponentPS)
 protected cb func OnAutoHackVehicle(evt:ref<AutoHackVehicleDeviceAction>) -> EntityNotificationType 

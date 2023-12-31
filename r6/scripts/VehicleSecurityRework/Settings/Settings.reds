@@ -13,9 +13,7 @@ public class VehicleSecurityRework extends ScriptableSystem
     // Data
 
     public let vehicleAffiliations: ref<StringIScriptableDictionary>;
-
-
-
+    
     // Mod Compatibility
 
     private let enableArchiveXLDebugLog: Bool = false;
@@ -104,7 +102,20 @@ public class VehicleSecurityRework extends ScriptableSystem
     @runtimeProperty("ModSettings.displayName","Reckless Driving")
     @runtimeProperty("ModSettings.description","Click to toggle this Quickhack")
     public let recklessDrivingHack:Bool = true;
-    
+
+    @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+    @runtimeProperty("ModSettings.category","Quickhacks - Default")
+    @runtimeProperty("ModSettings.displayName","Pop Random Tire")
+    @runtimeProperty("ModSettings.description","Click to toggle this Quickhack")
+    public let popRandomTireHack:Bool = true;
+
+    // Disabled until there is an easy way to repair a punctured tire
+    //@runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+    //@runtimeProperty("ModSettings.category","Quickhacks - Default")
+    //@runtimeProperty("ModSettings.displayName","Repair All Tires")
+    //@runtimeProperty("ModSettings.description","Click to toggle this Quickhack")
+    //public let repairAllTiresHack:Bool = true;
+
     // Quickhacks (LTBF)
 
     @runtimeProperty("ModSettings.mod","Vehicle Security Rework")

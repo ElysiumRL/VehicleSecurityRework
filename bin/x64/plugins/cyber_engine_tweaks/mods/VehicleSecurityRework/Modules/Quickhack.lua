@@ -11,6 +11,8 @@ function Quickhack.Generate()
 	local forceBrakesIcon = Quickhack.API.CreateUIIcon("GrenadeExplode","base\\gameplay\\gui\\common\\icons\\mappin_icons.inkatlas")
 	local recklessDrivingIcon = Quickhack.API.CreateUIIcon("OverLoadDevice","base\\gameplay\\gui\\common\\icons\\quickhacks_icons.inkatlas")
 	local remoteSecurityBreachIcon = Quickhack.API.CreateUIIcon("BreachProtocol","base\\gameplay\\gui\\common\\icons\\quickhacks_icons.inkatlas")
+	local vehiclePopTireIcon = Quickhack.API.CreateUIIcon("pop_tires","user\\elysium\\vehiclesecurityrework\\textures\\atlas\\vehiclesecurityrework_quickhacks.inkatlas")
+	local vehicleRepairTiresIcon = Quickhack.API.CreateUIIcon("multitool1","base\\gameplay\\gui\\widgets\\mappins\\atlas_gameplay_loop_solid.inkatlas")
 
 	local quickhackCategory = Quickhack.API.CreateQuickhackGameplayCategory("VehicleSecurity",remoteSecurityBreachIcon,LocKey(0000),LocKey(0000))
 
@@ -21,14 +23,14 @@ function Quickhack.Generate()
 	local explodeVehicleInteraction = Quickhack.API.CreateInteractionUI("ExplodeVehicle",LocKey(3652007),LocKey(3652008),explodeIcon)
 	local explodeVehicleCost = Quickhack.API.CreateQuickhackMemoryStatModifier("ExplodeVehicle","BaseCost","Additive",12.00)
 	local explodeVehicleQuickhack = Quickhack.API.CreateQuickhack("ExplodeVehicle",quickhackCategory,explodeVehicleInteraction,explodeVehicleCost,0.00,5.00)
-
-	local forceVehicleBrakesInteraction = Quickhack.API.CreateInteractionUI("ForceBrakes",LocKey(3652011),LocKey(3652012),forceBrakesIcon)
-	local forceVehicleBrakesCost = Quickhack.API.CreateQuickhackMemoryStatModifier("ForceBrakes","BaseCost","Additive",4.00)
-	local forceVehicleBrakesQuickhack = Quickhack.API.CreateQuickhack("ForceBrakes",quickhackCategory,forceVehicleBrakesInteraction,forceVehicleBrakesCost,0.00,0.75)
-
-	local recklessDrivingInteraction = Quickhack.API.CreateInteractionUI("RecklessDriving",LocKey(3652018),LocKey(3652019),recklessDrivingIcon)
-	local recklessDrivingCost = Quickhack.API.CreateQuickhackMemoryStatModifier("RecklessDriving","BaseCost","Additive",4.00)
-	local recklessDrivingQuickhack = Quickhack.API.CreateQuickhack("RecklessDriving",quickhackCategory,recklessDrivingInteraction,recklessDrivingCost,0.00,0.75)
+	
+	local popRandomTireVehicleInteraction = Quickhack.API.CreateInteractionUI("VehiclePopTire",LocKey(3652031),LocKey(3652032),vehiclePopTireIcon)
+	local popRandomTireVehicleCost = Quickhack.API.CreateQuickhackMemoryStatModifier("VehiclePopTire","BaseCost","Additive",4.00)
+	local popRandomTireVehicleQuickhack = Quickhack.API.CreateQuickhack("VehiclePopTire",quickhackCategory,popRandomTireVehicleInteraction,popRandomTireVehicleCost,0.00,0.05)
+	
+	local repairVehicleTiresInteraction = Quickhack.API.CreateInteractionUI("RepairTires",LocKey(3652033),LocKey(3652034),vehicleRepairTiresIcon)
+	local repairVehicleTiresCost = Quickhack.API.CreateQuickhackMemoryStatModifier("RepairTires","BaseCost","Additive",12.00)
+	local repairVehicleTiresQuickhack = Quickhack.API.CreateQuickhack("RepairTires",quickhackCategory,repairVehicleTiresInteraction,repairVehicleTiresCost,0.00,4.00)
 
 	local distractVehicleCost = Quickhack.API.CreateQuickhackMemoryStatModifier("VehicleDistraction","BaseCost","Additive",4.00)
 	local distractVehicleQuickhack = Quickhack.API.CreateQuickhack("VehicleDistraction",quickhackCategory,"Interactions.MalfunctionHack",distractVehicleCost,0.00,0.5)

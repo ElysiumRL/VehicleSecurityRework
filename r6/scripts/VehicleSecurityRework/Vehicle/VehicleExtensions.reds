@@ -114,15 +114,17 @@ public func CanHackTargetedVehicle(gameInstance:GameInstance,out ps:ref<VehicleC
     return false;
 }
 
+@addField(VehicleComponentPS)
+protected persistent let m_puncturedTires: array<Uint32>;
 
 @addField(VehicleComponentPS)
-protected persistent let isSecurityHardened : Bool = false;
+protected persistent let isSecurityHardened: Bool = false;
 
 @addField(VehicleComponentPS)
-protected persistent let m_isVehicleHacked : Bool = false;
+protected persistent let m_isVehicleHacked: Bool = false;
 
 @addField(VehicleComponentPS)
-protected persistent let m_hackAttemptsOnVehicle : Int32 = 0;
+protected persistent let m_hackAttemptsOnVehicle: Int32 = 0;
 
 @addField(VehicleComponentPS)
 public let quickhackForceBrakesExecuted:Bool = false;
@@ -137,10 +139,10 @@ public let CanTriggerRecklessDriving:Bool = true;
 public let VehicleSecurityReworkSingleton: ref<VehicleSecurityRework>;
 
 @addField(VehicleObject)
-public let AffiliationOverride : TweakDBID = t"";
+public let AffiliationOverride: TweakDBID = t"";
 
 @addField(VehicleObject)
-public let AffiliationOverrideString : String = "";
+public let AffiliationOverrideString: String = "";
 
 @addField(VehicleObject)
 public let VehicleSecurityReworkSingleton: ref<VehicleSecurityRework>;
@@ -656,4 +658,56 @@ public const func GetCurrentOutline() -> EFocusOutlineType
 		}
 	}
 	return outlineType;
+}
+
+@addMethod(WheeledObject)
+public const func GetWheelCount() -> Uint32
+{
+    let wheelSetup : ref<VehicleWheelDrivingSetup_Record> = TweakDBInterface.GetVehicleRecord(this.GetRecordID()).VehDriveModelData().WheelSetup();
+    
+    if(wheelSetup.IsExactlyA(n"gamedataVehicleWheelDrivingSetup_2_Record"))
+    {
+        return 2u;
+    }
+
+    if(wheelSetup.IsExactlyA(n"gamedataVehicleWheelDrivingSetup_4_Record"))
+    {
+        return 4u;
+    }
+
+    // This should not happen
+    // (unless CDPR adds a "6/8/12" wheel setup, but considering how they already handle vehicles with more than 4 wheels, it's not going to happen anytime soon)
+    return 0u;
+}
+
+@wrapMethod(VehicleComponent)
+protected cb func OnToggleBrokenTireEvent(evt: ref<VehicleToggleBrokenTireEvent>) -> Bool
+{
+    if (evt.toggle)
+    {
+        if(!ArrayContains(this.GetPS().m_puncturedTires,evt.tireIndex))
+        {
+            ArrayPush(this.GetPS().m_puncturedTires, evt.tireIndex);
+        }
+    }
+    else
+    {
+        if (ArrayContains(this.GetPS().m_puncturedTires, evt.tireIndex))
+        {
+            ArrayRemove(this.GetPS().m_puncturedTires, evt.tireIndex);
+        }
+    }
+    wrappedMethod(evt);
+  }
+
+@addMethod(WheeledObject)
+public func IsTirePunctured(tireIndex : Uint32) -> Bool
+{
+    return ArrayContains(this.GetVehiclePS().m_puncturedTires,tireIndex);
+}
+
+@addMethod(WheeledObject)
+public func AreAllTiresPunctured() -> Bool
+{
+    return Cast<Uint32>(ArraySize(this.GetVehiclePS().m_puncturedTires)) == this.GetWheelCount();
 }
