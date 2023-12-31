@@ -96,12 +96,6 @@ public class VehicleSecurityRework extends ScriptableSystem
     @runtimeProperty("ModSettings.displayName","Distraction")
     @runtimeProperty("ModSettings.description","Click to toggle this Quickhack")
     public let distractHack:Bool = true;
-    
-    @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
-    @runtimeProperty("ModSettings.category","Quickhacks - Default")
-    @runtimeProperty("ModSettings.displayName","Reckless Driving")
-    @runtimeProperty("ModSettings.description","Click to toggle this Quickhack")
-    public let recklessDrivingHack:Bool = true;
 
     @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
     @runtimeProperty("ModSettings.category","Quickhacks - Default")
