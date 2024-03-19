@@ -255,12 +255,15 @@ public final func UnlockHackedVehicleNoSave() -> Void
 }
 
 //we probably don't want to hack quest marked vehicles (but still get quickhacks for them)
-@wrapMethod(VehicleComponentPS)
+@wrapMethod(DeviceComponentPS)
 public func SetIsMarkedAsQuest(isQuest: Bool) -> Void
 {
-    if (isQuest)
+    if (NotEquals(this as VehicleComponentPS,null))
     {
-        this.UnlockHackedVehicle();
+        if (isQuest)
+        {
+            (this as VehicleComponentPS).UnlockHackedVehicle();
+        }
     }
     wrappedMethod(isQuest);
 }
