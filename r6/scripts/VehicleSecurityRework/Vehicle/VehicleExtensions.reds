@@ -239,19 +239,15 @@ public func GetVehicleHijackDifficulty() -> String
     return ToString(hijackDifficulty);
 }
 
-//Unlocks the vehicle (also marks it as stolen)
+// Unlocks the vehicle
 @addMethod(VehicleComponentPS)
 public final func UnlockHackedVehicle() -> Void
 {
     this.m_isVehicleHacked = true;
-    this.SetIsStolen(true);
-}
 
-//Force unlock the vehicle (without flagging it as stolen)
-@addMethod(VehicleComponentPS)
-public final func UnlockHackedVehicleNoSave() -> Void
-{
-    this.m_isVehicleHacked = true;
+	let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
+	let params:ref<VehicleSecurityRework> = container.Get(n"VehicleSecurityRework.Settings.VehicleSecurityRework") as VehicleSecurityRework;
+    this.SetIsStolen(params.flagVehiclesAsStolen);
 }
 
 //we probably don't want to hack quest marked vehicles (but still get quickhacks for them)
@@ -303,7 +299,6 @@ protected func GameAttached() -> Void
     if 
     (
         this.GetIsPlayerVehicle() 
-        || this.GetIsStolen() 
         || this.IsMarkedAsQuest() 
         || this.m_isVehicleHacked
         || this.VehicleSecurityReworkSingleton.forceSecurityUnlock)

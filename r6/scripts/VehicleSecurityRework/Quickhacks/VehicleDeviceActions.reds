@@ -1,5 +1,6 @@
 @if(ModuleExists("HackingExtensions"))
 import HackingExtensions.*
+import VehicleSecurityRework.Settings.*
 import VehicleSecurityRework.Vehicles.*
 
 public class UnlockSecurityDeviceAction extends CustomAccessBreach
@@ -319,7 +320,7 @@ protected cb func OnDistractionVisual(evt:ref<VehicleDistractionVisual>) -> Bool
 @addMethod(VehicleComponentPS)
 protected cb func OnAutoHackVehicle(evt:ref<AutoHackVehicleDeviceAction>) -> EntityNotificationType 
 {
-    this.m_isVehicleHacked = true;	
-    this.SetIsStolen(true);	
+    this.UnlockHackedVehicle();
+
     this.UnlockAllVehDoors();
 }

@@ -22,7 +22,13 @@ public class VehicleSecurityRework extends ScriptableSystem
     @runtimeProperty("ModSettings.displayName","Auto Unlock Security")
     @runtimeProperty("ModSettings.description","If you only want vehicle quickhacks (Requires Game Restart)")
     public let forceSecurityUnlock:Bool = false;
-   
+
+    @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+    @runtimeProperty("ModSettings.category","General")
+    @runtimeProperty("ModSettings.displayName","Flag Vehicle as Stolen")
+    @runtimeProperty("ModSettings.description","Enable this to flag the hacked vehicle as Stolen - Fixes an issue with Auto Drive mod (you should leave this as false unless you know what you are doing)")
+    public let flagVehiclesAsStolen:Bool = false;
+
     @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
     @runtimeProperty("ModSettings.category","Visibility")
     @runtimeProperty("ModSettings.displayName","Toggle Car scanning Highlights")

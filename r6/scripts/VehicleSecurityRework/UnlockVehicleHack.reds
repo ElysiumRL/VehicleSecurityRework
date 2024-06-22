@@ -63,14 +63,8 @@ public class UnlockVehicleProgramAction extends HackProgramAction
 		//Check if vehicle still exists and if it is a VehicleComponentPS
 		if (IsDefined(vehicle))
 		{
-			//Our boolean to check if we hacked the vehicle
-			vehicle.m_isVehicleHacked = true;
-			
-			//This is added for saves, since the boolean is not saved with the persistent state,
-			//we use this value (isStolen) as a way to know if the vehicle was hacked
-			//that way, you won't have to re-hack vehicle on reloading a save 
-			vehicle.SetIsStolen(true);
-			
+			vehicle.UnlockHackedVehicle();
+
 			//Optional, you don't "really" need it
 			vehicle.UnlockAllVehDoors();
 			
