@@ -1,13 +1,10 @@
 module VehicleSecurityRework.Settings
 
-
 import VehicleSecurityRework.Vehicles.*
 import CustomHackingSystem.Tools.*
 
-
-
 // Main Singleton of this mod
-// It's partially used to check for mod dependancies, easy lua accessor, mod settings container, and a bit of data storage
+// It's partially used to check for mod dependencies, easy lua accessor, mod settings container, and a bit of data storage
 public class VehicleSecurityRework extends ScriptableSystem
 {
     // Data
@@ -88,6 +85,15 @@ public class VehicleSecurityRework extends ScriptableSystem
     @runtimeProperty("ModSettings.min", "0")
     @runtimeProperty("ModSettings.max", "5")
     public let basePoliceStarLevelSecurityHardened:Int32 = 2;  
+
+    @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+    @runtimeProperty("ModSettings.category","Prevention System")
+    @runtimeProperty("ModSettings.displayName","Maximum Police Star Level")
+    @runtimeProperty("ModSettings.description","If your police star level is higher (or equal) to this, no additional star level will be added in case of hack failure")
+    @runtimeProperty("ModSettings.step", "1")
+    @runtimeProperty("ModSettings.min", "0")
+    @runtimeProperty("ModSettings.max", "5")
+    public let maximumPoliceStarLevel:Int32 = 4;  
 
     // Quickhacks (Default)
 
@@ -173,7 +179,4 @@ public class VehicleSecurityRework extends ScriptableSystem
         this.vehicleAffiliations.Insert("news",VehicleAffiliationTuple.Build(t"Factions.News54","Factions.News54"));
         this.vehicleAffiliations.Insert("kangtao",VehicleAffiliationTuple.Build(t"Factions.KangTao","Factions.KangTao"));
     }
-
-
-
 }

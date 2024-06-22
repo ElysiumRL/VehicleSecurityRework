@@ -28,69 +28,23 @@ public class UnlockVehicleProgramAction extends HackProgramAction
 		//Retrieve the vehicle PS (we are going to need it a lot)
 		let vehiclePS:ref<VehicleComponentPS> = this.hackInstanceSettings.hackedTarget as VehicleComponentPS;
 		let vehicleObject:ref<VehicleObject> = vehiclePS.GetOwnerEntity();
-		let hasAlreadyBeenHacked:Bool = vehiclePS.m_hackAttemptsOnVehicle > 1;
+		
+		this.TryTriggerPreventionSystemResponse(vehicleObject,vehiclePS);
+
 		//This count is used for knowing if a vehicle hack has been failed multiple times
 		//It's part of an "Improved" security restricting the amount of hacks possible especially on a high-end car
 		vehiclePS.m_hackAttemptsOnVehicle += 1;
 		let lockDifficulty: String = vehiclePS.GetVehicleCrackLockDifficulty();
 		vehiclePS.TryToForceVehicleSecurity(lockDifficulty);
 
-		let request: ref<PreventionDamage> = new PreventionDamage();
-		request.target = vehicleObject;
-		request.attackTime = 5.0;
-		request.attackType = gamedataAttackType.Hack;
-		request.damageDealtPercent = 100.0;
-		request.isTargetKilled = true;
-		
-		let preventionSystem: ref<PreventionSystem> = GameInstance.GetScriptableSystemsContainer(this.gameInstance).Get(n"PreventionSystem") as PreventionSystem;
-		
-		//Create base prevention request (used to raise a star)
-	  	let preventionSystemRequest = new PreventionDamageRequest();
-		preventionSystemRequest.targetID = vehicleObject.GetEntityID();
-		preventionSystemRequest.targetPosition = vehicleObject.GetWorldPosition();
-		preventionSystemRequest.isTargetPrevention = vehicleObject.IsPrevention();
-		preventionSystemRequest.isTargetVehicle = true;
-		preventionSystemRequest.isTargetKilled = true;
-		preventionSystemRequest.telemetryInfo = request.GetTelemetryDescription();
-	  	preventionSystemRequest.attackType = gamedataAttackType.Hack;
-	  	preventionSystemRequest.damageDealtPercentValue = 100.0;
-
-		if(!hasAlreadyBeenHacked)
-		{
-			let preventionDifficulty:Int32 = vehicleObject.GetPreventionResponseDifficulty();
-			let i = 0;
-			while(i < preventionDifficulty - 1)
-			{
-				//Raises 1 star level for each call
-	  			preventionSystem.ProcessPreventionDamageRequest(preventionSystemRequest);
-	  			i += 1;
-			}
-		}
-		else
-		{
-			if(vehiclePS.IsVehicleSecurityHardened())
-			{
-				let i = 0;
-				while(i < vehicleObject.VehicleSecurityReworkSingleton.basePoliceStarLevelSecurityHardened)
-				{
-					preventionSystem.ProcessPreventionDamageRequest(preventionSystemRequest);
-					i+=1;
-				}
-			}
-		}
-		//By default, sending these methods too will automatically raise a star
-		vehiclePS.SendStimsOnVehicleQuickhack(true,false);
-      	preventionSystem.HeatPipeline("PlayerStoleVehicle");
-		PreventionSystem.SetSpawnCodeRedReinforcement(this.gameInstance,true);
-
 		//+ an additional warning message
 		if (vehiclePS.IsVehicleSecurityHardened())
 		{
-			PreventionSystem.ShowMessage(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-UnlockVehicleHack-ProgramLock"),5.0);
+			PreventionSystem.ShowMessage(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-UnlockVehicleHack-ProgramLock"), 5.0);
 		}
 		else
 		{
-			PreventionSystem.ShowMessage(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-UnlockVehicleHack-ProgramFailure"),5.0);
+			PreventionSystem.ShowMessage(this.gameInstance,LocKeyToString(n"VehicleSecurityRework-UnlockVehicleHack-ProgramFailure"), 5.0);
 		}
 
 		let action:ref<VehicleDistractionDeviceAction> = vehiclePS.ActionVehicleDistraction();
@@ -143,5 +97,86 @@ public class UnlockVehicleProgramAction extends HackProgramAction
 		//{
 		//	LogChannel(n"DEBUG","[Custom Hacking System] Vehicle Not Found");
 		//}
+	}
+
+
+	// Attempts at triggering the Prevention System (aka: Police) if all conditions are met
+	private func TryTriggerPreventionSystemResponse(vehicleObject: ref<VehicleObject>, vehiclePS:ref<VehicleComponentPS>)
+	{
+		let preventionDifficulty:Int32 = vehicleObject.GetPreventionResponseDifficulty();
+
+		// Early skip if we don't want, or just can't trigger prevention request (i.e.: 0 star level)
+		if (preventionDifficulty == 0)
+		{
+			return;
+		}
+		let preventionSystem: ref<PreventionSystem> = GameInstance.GetScriptableSystemsContainer(this.gameInstance).Get(n"PreventionSystem") as PreventionSystem;
+		
+		let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(vehiclePS.GetGameInstance());
+		let params:ref<VehicleSecurityRework> = container.Get(n"VehicleSecurityRework.Settings.VehicleSecurityRework") as VehicleSecurityRework;
+
+		let currentHeatLevel:Int32 = Cast<Int32>(preventionSystem.GetHeatStageAsInt());
+		
+		// Check if the requested heat level will be above the threshold of the Maximum star level defined in the Mod Settings
+		if(currentHeatLevel + preventionDifficulty > params.maximumPoliceStarLevel)
+		{
+			preventionDifficulty =  (currentHeatLevel + preventionDifficulty) - params.maximumPoliceStarLevel;
+
+			// If the heat level won't update (or is lower than 0 because we are above the max star level), return
+			if (preventionDifficulty <= 0)
+			{
+				return;
+			}
+		}
+
+		let hasAlreadyBeenHacked:Bool = vehiclePS.m_hackAttemptsOnVehicle > 1;
+
+		// Define the Prevention Damage, this is used to build the Telemetry Info (used down by the Prevention Damage Request)
+		// I could try to replicate what the GetTelemetryDescription() method is doing, but this is safer, as if the telementy description changes,
+		// we shouldn't need to modify this code
+		let request: ref<PreventionDamage> = new PreventionDamage();
+		request.target = vehicleObject;
+		request.attackTime = 5.0;
+		request.attackType = gamedataAttackType.Hack;
+		request.damageDealtPercent = 100.0;
+		request.isTargetKilled = true;
+		
+		//Create base prevention request (used to raise a star)
+	  	let preventionSystemRequest = new PreventionDamageRequest();
+		preventionSystemRequest.targetID = vehicleObject.GetEntityID();
+		preventionSystemRequest.targetPosition = vehicleObject.GetWorldPosition();
+		preventionSystemRequest.isTargetPrevention = vehicleObject.IsPrevention();
+		preventionSystemRequest.isTargetVehicle = true;
+		preventionSystemRequest.isTargetKilled = true;
+		preventionSystemRequest.telemetryInfo = request.GetTelemetryDescription();
+	  	preventionSystemRequest.attackType = gamedataAttackType.Hack;
+	  	preventionSystemRequest.damageDealtPercentValue = 100.0;
+
+		if(!hasAlreadyBeenHacked)
+		{
+			let i = 0;
+			while(i < preventionDifficulty - 1)
+			{
+				//Raises 1 star level for each call
+	  			preventionSystem.ProcessPreventionDamageRequest(preventionSystemRequest);
+	  			i += 1;
+			}
+		}
+		else
+		{
+			if(vehiclePS.IsVehicleSecurityHardened())
+			{
+				let i = 0;
+				while(i < vehicleObject.VehicleSecurityReworkSingleton.basePoliceStarLevelSecurityHardened)
+				{
+					preventionSystem.ProcessPreventionDamageRequest(preventionSystemRequest);
+					i+=1;
+				}
+			}
+		}
+		//By default, sending these methods too will automatically raise a star
+		vehiclePS.SendStimsOnVehicleQuickhack(true,false);
+      	preventionSystem.HeatPipeline("PlayerStoleVehicle");
+		PreventionSystem.SetSpawnCodeRedReinforcement(this.gameInstance,true);
 	}
 }
