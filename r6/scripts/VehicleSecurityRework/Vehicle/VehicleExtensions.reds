@@ -1,5 +1,6 @@
 module VehicleSecurityRework.Vehicles
 import VehicleSecurityRework.Settings.*
+import VehicleSecurityRework.Base.*
 
 import InteractionExtensions.*
 import TargetingExtensions.*
@@ -147,48 +148,75 @@ public let AffiliationOverrideString: String = "";
 @addField(VehicleObject)
 public let VehicleSecurityReworkSingleton: ref<VehicleSecurityRework>;
 
+//Returns the difficulty ("EASY","MEDIUM","HARD","IMPOSSIBLE") from the Cracklock flat in the TweakDB Record, converted to EVehicleHackLevel enum
+@addMethod(VehicleComponentPS)
+public func GetVehicleCrackLockDifficulty() -> EVehicleHackLevel
+{
+    //Get the record of the vehicle
+    let record: TweakDBID = this.GetOwnerEntity().GetRecord().GetID();
+    //Get the flat ("variable") that corresponds to the cracklock difficulty
+    let crackLockDifficulty:Variant = TweakDBInterface.GetFlat(record + t".crackLockDifficulty");
+
+    let crackLockDifficultyAsString:String = ToString(crackLockDifficulty);
+    
+    if (Equals(crackLockDifficultyAsString, "MEDIUM"))
+    {
+        return EVehicleHackLevel.Medium;
+    }
+
+    if (Equals(crackLockDifficultyAsString, "HARD"))
+    {
+        return EVehicleHackLevel.Hard;
+    }
+
+    if (Equals(crackLockDifficultyAsString, "IMPOSSIBLE"))
+    {
+        return EVehicleHackLevel.VeryHard;
+    }
+
+    return EVehicleHackLevel.Easy;
+
+}
 
 //Returns the tweakDBID path of the minigame used to unlock the vehicle
 @addMethod(VehicleComponentPS)
 public func GetVehicleHackDBDifficulty() -> TweakDBID
 {	
-    let crackLockDifficulty : String = this.GetVehicleCrackLockDifficulty();
+    let crackLockDifficulty : EVehicleHackLevel = this.GetVehicleCrackLockDifficulty();
 
-    if(Equals(crackLockDifficulty, "MEDIUM"))
+    switch(crackLockDifficulty)
     {
-        return t"CustomHackingSystemMinigame.UnlockVehicleMedium";
+        case EVehicleHackLevel.None:
+            return TDBID.None();
+        case EVehicleHackLevel.Easy:
+            return t"CustomHackingSystemMinigame.UnlockVehicleEasy"; 
+        case EVehicleHackLevel.Medium:
+            return t"CustomHackingSystemMinigame.UnlockVehicleMedium";
+        case EVehicleHackLevel.Hard:
+            return t"CustomHackingSystemMinigame.UnlockVehicleHard"; 
+        case EVehicleHackLevel.VeryHard:
+            return t"CustomHackingSystemMinigame.UnlockVehicleImpossible";
     }
-    if(Equals(crackLockDifficulty, "HARD"))
-    {
-        return t"CustomHackingSystemMinigame.UnlockVehicleHard";
-    }
-    if(Equals(crackLockDifficulty, "IMPOSSIBLE"))
-    {
-        return t"CustomHackingSystemMinigame.UnlockVehicleImpossible";
-    }
-
-    return t"CustomHackingSystemMinigame.UnlockVehicleEasy";
 }
 
 @addMethod(VehicleObject)
 public func GetPreventionResponseDifficulty() -> Int32
 {	
-    let crackLockDifficulty : String = this.GetVehiclePS().GetVehicleCrackLockDifficulty();
+    let crackLockDifficulty : EVehicleHackLevel = this.GetVehiclePS().GetVehicleCrackLockDifficulty();
 
-    if(Equals(crackLockDifficulty, "MEDIUM"))
+    switch(crackLockDifficulty)
     {
-        return this.VehicleSecurityReworkSingleton.basePoliceStarLevelMedium;
+        case EVehicleHackLevel.None:
+            return 0;
+        case EVehicleHackLevel.Easy:
+            return this.VehicleSecurityReworkSingleton.basePoliceStarLevelEasy;
+        case EVehicleHackLevel.Medium:
+            return this.VehicleSecurityReworkSingleton.basePoliceStarLevelMedium;
+        case EVehicleHackLevel.Hard:
+            return this.VehicleSecurityReworkSingleton.basePoliceStarLevelHard;
+        case EVehicleHackLevel.VeryHard:
+            return this.VehicleSecurityReworkSingleton.basePoliceStarLevelVeryHard;
     }
-    if(Equals(crackLockDifficulty, "HARD"))
-    {
-        return this.VehicleSecurityReworkSingleton.basePoliceStarLevelHard;
-    }
-    if(Equals(crackLockDifficulty, "IMPOSSIBLE"))
-    {
-        return this.VehicleSecurityReworkSingleton.basePoliceStarLevelVeryHard;
-    }
-
-    return this.VehicleSecurityReworkSingleton.basePoliceStarLevelEasy;
 }
 
 @addMethod(VehicleComponentPS)
@@ -210,21 +238,9 @@ public func GetCurrentHackAttempts() -> Int32
 }
 
 @addMethod(VehicleComponentPS)
-public func TryToForceVehicleSecurity(lockDifficulty : String)
+public func TryToForceVehicleSecurity(lockDifficulty : EVehicleHackLevel)
 {
-    this.isSecurityHardened = ((Equals(lockDifficulty,"HARD") || Equals(lockDifficulty,"IMPOSSIBLE")) && this.m_hackAttemptsOnVehicle >= 2);
-}
-
-//Returns the difficulty ("EASY","MEDIUM","HARD","IMPOSSIBLE") from the Cracklock flat in the TweakDB Record
-@addMethod(VehicleComponentPS)
-public func GetVehicleCrackLockDifficulty() -> String
-{
-    //Get the record of the vehicle
-    let record: TweakDBID = this.GetOwnerEntity().GetRecord().GetID();
-    //Get the flat ("variable") that corresponds to the cracklock difficulty
-    let crackLockDifficulty:Variant = TweakDBInterface.GetFlat(record + t".crackLockDifficulty");
-
-    return ToString(crackLockDifficulty);
+    this.isSecurityHardened = ((Equals(lockDifficulty,EVehicleHackLevel.Hard) || Equals(lockDifficulty,EVehicleHackLevel.VeryHard)) && this.m_hackAttemptsOnVehicle >= 2);
 }
 
 //Returns the difficulty ("EASY","MEDIUM","HARD","IMPOSSIBLE") from the Hijack flat in the TweakDB Record
@@ -295,6 +311,47 @@ protected func GameAttached() -> Void
 
     let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
     this.VehicleSecurityReworkSingleton = container.Get(n"VehicleSecurityRework.Settings.VehicleSecurityRework") as VehicleSecurityRework;
+
+    if(this.VehicleSecurityReworkSingleton.canVehicleBeAutoUnlockedByDefault)
+    {
+        let vehicleHackLevel:EVehicleHackLevel = this.GetVehicleCrackLockDifficulty();
+
+        if( NotEquals(vehicleHackLevel,EVehicleHackLevel.None) &&
+            EnumInt(vehicleHackLevel) <= EnumInt(this.VehicleSecurityReworkSingleton.availableHackLevels))
+        {
+            let unlockProbabilityRoll:Float = RandF();
+            switch(vehicleHackLevel)
+            {
+                case EVehicleHackLevel.None:
+                    break; 
+                case EVehicleHackLevel.Easy:
+                    if (unlockProbabilityRoll > 1.0 - this.VehicleSecurityReworkSingleton.baseAutoUnlockProbabilityEasy)
+                    {
+                        this.UnlockHackedVehicle();
+                    }
+                    break; 
+                case EVehicleHackLevel.Medium:
+                    if (unlockProbabilityRoll > 1.0 - this.VehicleSecurityReworkSingleton.baseAutoUnlockProbabilityMedium)
+                    {
+                        this.UnlockHackedVehicle();
+                    }
+                    break; 
+                case EVehicleHackLevel.Hard:
+                    if (unlockProbabilityRoll > 1.0 - this.VehicleSecurityReworkSingleton.baseAutoUnlockProbabilityHard)
+                    {
+                        this.UnlockHackedVehicle();
+                    }
+                    break; 
+                case EVehicleHackLevel.VeryHard:
+                    if (unlockProbabilityRoll > 1.0 - this.VehicleSecurityReworkSingleton.baseAutoUnlockProbabilityVeryHard)
+                    {
+                        this.UnlockHackedVehicle();
+                    }
+                    break;
+            }
+        }
+    }
+
     //Ignore the hack part if it's not needed (or already hacked previously)
     if 
     (
@@ -438,6 +495,173 @@ public const func CompileScannerChunks() -> Bool
     return wrappedMethod();
 }
 
+@replaceMethod(VehicleComponentPS)
+public final func GetValidChoices(const objectActionRecords: script_ref<array<wref<ObjectAction_Record>>>, const context: script_ref<GetActionsContext>, objectActionsCallbackController: wref<gameObjectActionsCallbackController>, choices: script_ref<array<InteractionChoice>>, isAutoRefresh: Bool) -> Void
+{
+    let actionName: CName;
+    let actionRecord: wref<ObjectAction_Record>;
+    let actionType: gamedataObjectActionType;
+    let choice: InteractionChoice;
+    let compareAction: ref<ScriptableDeviceAction>;
+    let i: Int32;
+    let instigator: wref<GameObject>;
+    let isRemote: Bool;
+    let j: Int32;
+    let newAction: ref<ScriptableDeviceAction>;
+    let objectActionInteractionLayer: CName;
+    let playerInteractionLayer: CName;
+    let vehDataPackage: wref<VehicleDataPackage_Record>;
+    let maxChoices: Int32 = 4;
+    VehicleComponent.GetVehicleDataPackage(this.GetGameInstance(), this.GetOwnerEntity(), vehDataPackage);
+    playerInteractionLayer = Deref(context).interactionLayerTag;
+    instigator = Deref(context).processInitiatorObject;
+    i = 0;
+    while i < ArraySize(Deref(objectActionRecords)) {
+      actionType = Deref(objectActionRecords)[i].ObjectActionType().Type();
+      objectActionInteractionLayer = Deref(objectActionRecords)[i].InteractionLayer();
+      if NotEquals(objectActionInteractionLayer, playerInteractionLayer) {
+      } else {
+        switch actionType {
+          case gamedataObjectActionType.Payment:
+          case gamedataObjectActionType.Item:
+          case gamedataObjectActionType.Direct:
+            isRemote = false;
+            break;
+          case gamedataObjectActionType.MinigameUpload:
+          case gamedataObjectActionType.VehicleQuickHack:
+          case gamedataObjectActionType.DeviceQuickHack:
+          case gamedataObjectActionType.Remote:
+            isRemote = true;
+            break;
+          default:
+            isRemote = false;
+        };
+        if !isRemote && Equals(Deref(context).requestType, gamedeviceRequestType.Direct) || isRemote && Equals(Deref(context).requestType, gamedeviceRequestType.Remote) {
+          actionName = Deref(objectActionRecords)[i].ActionName();
+          switch actionName {
+            case n"VehicleHijack":
+              newAction = this.ActionDemolition(context);
+              newAction.SetIllegal(true);
+              break;
+            case n"VehicleMount":
+              newAction = this.ActionVehicleDoorInteraction(ToString(Deref(objectActionRecords)[i].InteractionLayer()), true);
+              break;
+            case n"VehicleCrackLock":
+              newAction = this.ActionEngineering(context);
+              newAction.SetIllegal(true);
+          };
+          newAction.SetObjectActionID(Deref(objectActionRecords)[i].GetID());
+          newAction.SetExecutor(instigator);
+          if IsDefined(objectActionsCallbackController) {
+            if !objectActionsCallbackController.HasObjectAction(Deref(objectActionRecords)[i]) {
+              objectActionsCallbackController.AddObjectAction(Deref(objectActionRecords)[i]);
+            };
+          };
+          if newAction.IsPossible(this.GetOwnerEntity(),Deref(objectActionRecords)[i], objectActionsCallbackController) {
+            if newAction.IsVisible(context, objectActionsCallbackController) {
+              actionRecord = Deref(objectActionRecords)[i];
+              choice = newAction.GetInteractionChoice();
+              newAction.prop.name = playerInteractionLayer;
+              ArrayPush(choice.data, ToVariant(newAction));
+              j = 0;
+              while j < maxChoices {
+                compareAction = FromVariant<ref<ScriptableDeviceAction>>(Deref(choices)[j].data[0]);
+                if IsDefined(compareAction) {
+                  if actionRecord.Priority() >= compareAction.GetObjectActionRecord().Priority() {
+                    ArrayInsert(Deref(choices), j, choice);
+                    break;
+                  };
+                } else {
+                  ArrayPush(Deref(choices), choice);
+                  break;
+                };
+                j += 1;
+              };
+            } else {
+              newAction.SetInactiveWithReason(false, "LocKey#7009");
+            };
+          };
+        };
+      };
+      i += 1;
+    };
+    if ArraySize(Deref(choices)) > maxChoices {
+      ArrayResize(Deref(choices), maxChoices);
+    };
+}
+
+@wrapMethod(ScriptableDeviceComponentPS)
+protected func ActionDemolition(const context: script_ref<GetActionsContext>) -> ref<ActionDemolition>
+{
+    if(this != (this as VehicleComponentPS))
+    {
+        return wrappedMethod(context);
+    }
+
+    let vehiclePS:ref<VehicleComponentPS> = this as VehicleComponentPS;
+    let action: ref<ActionDemolition> = new ActionDemolition();
+    action.slotID.id = Deref(context).interactionLayerTag;
+    action.clearanceLevel = 2;
+    action.SetUp(this);
+    action.SetProperties(this.m_skillCheckContainer.GetDemolitionSlot());
+
+	let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(vehiclePS.GetGameInstance());
+	let params: ref<VehicleSecurityRework> = container.Get(n"VehicleSecurityRework.Settings.VehicleSecurityRework") as VehicleSecurityRework;
+
+    if (!params.allowStrengthOrTechSkills && vehiclePS.m_isVehicleHacked)
+    {
+        action.m_skillCheck.SetIsActive(true);
+        action.m_skillCheck.SetIsPassed(true);
+        action.m_skillCheck.SetDifficulty(EGameplayChallengeLevel.NONE);
+        let skillcheckInfo:UIInteractionSkillCheck = action.GetSkillcheckInfo();
+        skillcheckInfo.requiredSkill = 0;
+        action.m_skillCheck.m_baseSkill.m_requiredLevel = 0;
+    }
+    action.AddDeviceName(this.m_deviceName);
+    action.SetIllegal(this.m_illegalActions.skillChecks);
+    action.RegisterAsRequester(Deref(context).requestorID);
+    action.CreateInteraction(Deref(context).processInitiatorObject);
+    action.SetDurationValue(this.m_skillCheckContainer.GetDemolitionSlot().GetDuration());
+
+    return action;
+}
+
+@wrapMethod(ScriptableDeviceComponentPS)
+protected func ActionEngineering(const context: script_ref<GetActionsContext>) -> ref<ActionEngineering>
+{
+    if(this != (this as VehicleComponentPS))
+    {
+        return wrappedMethod(context);
+    }
+    let vehiclePS:ref<VehicleComponentPS> = this as VehicleComponentPS;
+
+    let action: ref<ActionEngineering> = new ActionEngineering();
+    action.clearanceLevel = 2;
+    action.SetUp(this);
+    action.SetProperties(this.m_skillCheckContainer.GetEngineeringSlot());
+
+    let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(vehiclePS.GetGameInstance());
+	let params: ref<VehicleSecurityRework> = container.Get(n"VehicleSecurityRework.Settings.VehicleSecurityRework") as VehicleSecurityRework;
+
+    if (!params.allowStrengthOrTechSkills && vehiclePS.m_isVehicleHacked)
+    {
+        action.m_skillCheck.SetIsActive(true);
+        action.m_skillCheck.SetIsPassed(true);
+        action.m_skillCheck.SetDifficulty(EGameplayChallengeLevel.NONE);
+        let skillcheckInfo:UIInteractionSkillCheck = action.GetSkillcheckInfo();
+        skillcheckInfo.requiredSkill = 0;
+        action.m_skillCheck.m_baseSkill.m_requiredLevel = 0;
+    }
+
+    action.AddDeviceName(this.m_deviceName);
+    action.SetIllegal(this.m_illegalActions.skillChecks);
+    action.RegisterAsRequester(Deref(context).requestorID);
+    action.CreateInteraction(Deref(context).processInitiatorObject);
+    action.SetDurationValue(this.m_skillCheckContainer.GetEngineeringSlot().GetDuration());
+    return action;
+}
+
+
 //Remove all actions if the vehicle is not hacked yet
 @replaceMethod(VehicleComponentPS)
 public final func DetermineActionsToPush(interaction: ref<InteractionComponent>, context: VehicleActionsContext, objectActionsCallbackController: wref<gameObjectActionsCallbackController>, isAutoRefresh: Bool) -> Void 
@@ -453,15 +677,7 @@ public final func DetermineActionsToPush(interaction: ref<InteractionComponent>,
     let vehDataPackage: wref<VehicleDataPackage_Record>;
     VehicleComponent.GetVehicleDataPackage(this.GetGameInstance(), this.GetOwnerEntity(), vehDataPackage);
 
-    //Should not be needed since it's on Init now 	
-    
-    //if this.GetIsDestroyed() 
-    //{
-    //    this.PushActionsToInteractionComponent(interaction, choices, context);
-    //    return;
-    //}
-
-    if this.IsDoorLayer(context.interactionLayerTag) 
+    if (this.IsDoorLayer(context.interactionLayerTag)) 
     {
         doorLayer = context.interactionLayerTag;
         this.GetVehicleDoorEnum(door, doorLayer);
@@ -471,7 +687,7 @@ public final func DetermineActionsToPush(interaction: ref<InteractionComponent>,
         }
         if Equals(this.GetDoorInteractionState(door), VehicleDoorInteractionState.Reserved)
         {
-            this.PushActionsToInteractionComponent(interaction, choices, context);
+            //this.PushActionsToInteractionComponent(interaction, choices, context);
             //return;
         }
         if Equals(this.GetDoorInteractionState(door), VehicleDoorInteractionState.Available)
@@ -488,47 +704,62 @@ public final func DetermineActionsToPush(interaction: ref<InteractionComponent>,
             this.GetQuestLockedActions(actions, context);
         }
     }
+
     if Equals(context.interactionLayerTag, n"trunk")
     {
         this.GetTrunkActions(actions, context);
     }
+
     if Equals(context.interactionLayerTag, n"hood")
     {
         this.GetHoodActions(actions, context);
     }
+
     if Equals(context.interactionLayerTag, n"Mount") 
     {
         return;
     }
+
     context.requestType = gamedeviceRequestType.Direct;
     this.GetOwnerEntity().GetRecord().ObjectActions(actionRecords);
-    
-    //this removes the interaction for demo & engineering  actions, but it just won't put the default mount action in game, wtf
-    //Needs a fix or a removal from the tweakdb but not tested yet
-    let actionsToRemove : array<wref<ObjectAction_Record>>;
-    
-    while i < ArraySize(actionRecords) 
+
+    let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
+	let params:ref<VehicleSecurityRework> = container.Get(n"VehicleSecurityRework.Settings.VehicleSecurityRework") as VehicleSecurityRework;
+
+    if (!params.allowStrengthOrTechSkills)
     {
-        let actionName : CName = actionRecords[i].ActionName();
-        switch actionName {
-            case n"VehicleHijack":
-            //ArrayPush(actionsToRemove,actionRecords[i]);
-              break;
-            case n"VehicleCrackLock":
-            ArrayPush(actionsToRemove,actionRecords[i]);
-            break;
-          };
-        i+=1;
-    }
-    i = 0;
-    while i < ArraySize(actionsToRemove) 
-    {
-        ArrayRemove(actionRecords,actionsToRemove[i]);
-        i += 1;
+        //this removes the interaction for demo & engineering  actions, but it just won't put the default mount action in game, wtf
+        //Needs a fix or a removal from the tweakdb but not tested yet
+        let actionsToRemove : array<wref<ObjectAction_Record>>;
+        
+        while i < ArraySize(actionRecords)
+        {
+            let actionName : CName = actionRecords[i].ActionName();
+            switch (actionName)
+            {
+                case n"VehicleHijack":
+                    ArrayPush(actionsToRemove,actionRecords[i]);
+                    break;
+                case n"VehicleCrackLock":
+                    ArrayPush(actionsToRemove,actionRecords[i]);
+                    break;
+              };
+            i+=1;
+        }
+        i = 0;
+
+        while i < ArraySize(actionsToRemove) 
+        {
+            //ArrayRemove(actionRecords,actionsToRemove[i]);
+            i += 1;
+        }
+        i = 0;
     }
     i = 0;
 
-    this.GetValidChoices(actionRecords, this.ChangeToActionContext(context), objectActionsCallbackController, choices, isAutoRefresh);
+    let ActionsContext:GetActionsContext = this.ChangeToActionContext(context);
+
+    this.GetValidChoices(actionRecords, ActionsContext, objectActionsCallbackController, choices, isAutoRefresh);
     this.FinalizeGetActions(actions);
     while i < ArraySize(actions)
     {
@@ -543,6 +774,10 @@ public final func DetermineActionsToPush(interaction: ref<InteractionComponent>,
             actions[i].actionName = n"";
             (actions[i] as ScriptableDeviceAction).SetInactive();
             //(actions[i] as ScriptableDeviceAction).SetIllegal(true);
+        }
+        else
+        {
+            ChoiceTypeWrapper.SetType(actionToExtractChoices.interactionChoice.choiceMetaData.type, gameinteractionsChoiceType.CheckSuccess);
         }
         ArrayPush(choices, actionToExtractChoices.GetInteractionChoice());
         i += 1;
@@ -708,4 +943,11 @@ public func IsTirePunctured(tireIndex : Uint32) -> Bool
 public func AreAllTiresPunctured() -> Bool
 {
     return Cast<Uint32>(ArraySize(this.GetVehiclePS().m_puncturedTires)) == this.GetWheelCount();
+}
+
+@wrapMethod(VehicleComponent)
+protected cb func OnVehicleDoorOpen(evt: ref<VehicleDoorOpen>) -> Bool
+{
+    wrappedMethod(evt);
+    this.GetPS().UnlockHackedVehicle();
 }

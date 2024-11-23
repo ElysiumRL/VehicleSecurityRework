@@ -18,6 +18,18 @@ import HackingExtensions.Programs.*
 @if(ModuleExists("CustomHackingSystem.Tools"))
 import CustomHackingSystem.Tools.*
 
+
+// Hack level of a given vehicle, extracted from the following TweakDBID strings: ("EASY","MEDIUM","HARD","IMPOSSIBLE")
+// with "None" added in case we don't want any hack on vehicles
+public enum EVehicleHackLevel
+{
+    None = 0,
+    Easy = 1,
+    Medium = 2,
+    Hard = 3,
+    VeryHard = 4
+}
+
 //Class used for keybind events
 public class GlobalInputListener
 {

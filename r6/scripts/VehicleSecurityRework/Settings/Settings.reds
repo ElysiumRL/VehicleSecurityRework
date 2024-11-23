@@ -2,6 +2,7 @@ module VehicleSecurityRework.Settings
 
 import VehicleSecurityRework.Vehicles.*
 import CustomHackingSystem.Tools.*
+import VehicleSecurityRework.Base.*
 
 // Main Singleton of this mod
 // It's partially used to check for mod dependencies, easy lua accessor, mod settings container, and a bit of data storage
@@ -28,12 +29,71 @@ public class VehicleSecurityRework extends ScriptableSystem
     @runtimeProperty("ModSettings.displayName","Flag Vehicle as Stolen")
     @runtimeProperty("ModSettings.description","Enable this to flag the hacked vehicle as Stolen - Fixes an issue with Auto Drive mod (you should leave this as false unless you know what you are doing)")
     public let flagVehiclesAsStolen:Bool = false;
+    
+    @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+    @runtimeProperty("ModSettings.category","General")
+    @runtimeProperty("ModSettings.displayName","Allow Strength/Technical Skill checks")
+    @runtimeProperty("ModSettings.description","Use vanilla to force open a vehicle, while still giving access to Vehicle's Hack (Requires Game Restart). MAKE SURE YOU BIND THE KEY TO SOMETHING OTHER THAN PRIMARY/SECONDARY INTERACTION KEYS")
+    public let allowStrengthOrTechSkills:Bool = false;
 
     @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
     @runtimeProperty("ModSettings.category","Visibility")
     @runtimeProperty("ModSettings.displayName","Toggle Car scanning Highlights")
     @runtimeProperty("ModSettings.description","Toggles scan/quickhacks highlight effect if you want it disabled")
     public let enableHighlights:Bool = true;
+    
+    @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+    @runtimeProperty("ModSettings.category","Hacks")
+    @runtimeProperty("ModSettings.displayName","Can Vehicle be Auto Unlocked By Default")
+    @runtimeProperty("ModSettings.description","True if there is a chance that a vehicle is automatically unlocked when spawning, bypassing the vehicle hack, you can tweak the chance below (Requires Game Restart)")
+    public let canVehicleBeAutoUnlockedByDefault:Bool = true;
+
+    @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+    @runtimeProperty("ModSettings.category","Hacks")
+    @runtimeProperty("ModSettings.displayName","Minimum Vehicle Hack difficulty")
+    @runtimeProperty("ModSettings.description","For vehicles below the selected hack level, hacks will be disabled by default. Hack level is based on Vanilla game's skill check requirements (Requires Game Restart)")
+    @runtimeProperty("ModSettings.dependency", "canVehicleBeAutoUnlockedByDefault")
+    public let availableHackLevels:EVehicleHackLevel = EVehicleHackLevel.None;
+    
+    @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+    @runtimeProperty("ModSettings.category","Hacks")
+    @runtimeProperty("ModSettings.displayName","Vehicle Auto Unlock (Easy Hack)")
+    @runtimeProperty("ModSettings.description","Sets the chance of a vehicle being automatically hacked when spawning")
+    @runtimeProperty("ModSettings.step", "0.001")
+    @runtimeProperty("ModSettings.min", "0.0")
+    @runtimeProperty("ModSettings.max", "1.0")
+    @runtimeProperty("ModSettings.dependency", "canVehicleBeAutoUnlockedByDefault")
+    public let baseAutoUnlockProbabilityEasy:Float = 1.0;
+
+    @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+    @runtimeProperty("ModSettings.category","Hacks")
+    @runtimeProperty("ModSettings.displayName","Vehicle Auto Unlock (Medium Hack)")
+    @runtimeProperty("ModSettings.description","Sets the chance of a vehicle being automatically hacked when spawning")
+    @runtimeProperty("ModSettings.step", "0.001")
+    @runtimeProperty("ModSettings.min", "0.0")
+    @runtimeProperty("ModSettings.max", "1.0")
+    @runtimeProperty("ModSettings.dependency", "canVehicleBeAutoUnlockedByDefault")
+    public let baseAutoUnlockProbabilityMedium:Float = 1.0;
+
+    @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+    @runtimeProperty("ModSettings.category","Hacks")
+    @runtimeProperty("ModSettings.displayName","Vehicle Auto Unlock (Hard Hack)")
+    @runtimeProperty("ModSettings.description","Sets the chance of a vehicle being automatically hacked when spawning")
+    @runtimeProperty("ModSettings.step", "0.001")
+    @runtimeProperty("ModSettings.min", "0.0")
+    @runtimeProperty("ModSettings.max", "1.0")
+    @runtimeProperty("ModSettings.dependency", "canVehicleBeAutoUnlockedByDefault")
+    public let baseAutoUnlockProbabilityHard:Float = 1.0;
+
+    @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+    @runtimeProperty("ModSettings.category","Hacks")
+    @runtimeProperty("ModSettings.displayName","Vehicle Auto Unlock (Very Hard Hack)")
+    @runtimeProperty("ModSettings.description","Sets the chance of a vehicle being automatically hacked when spawning")
+    @runtimeProperty("ModSettings.step", "0.001")
+    @runtimeProperty("ModSettings.min", "0.0")
+    @runtimeProperty("ModSettings.max", "1.0")
+    @runtimeProperty("ModSettings.dependency", "canVehicleBeAutoUnlockedByDefault")
+    public let baseAutoUnlockProbabilityVeryHard:Float = 1.0;
 
     @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
     @runtimeProperty("ModSettings.category","Hacks")

@@ -1,6 +1,7 @@
 module VehicleSecurityRework.Hack
 import VehicleSecurityRework.Vehicles.*
 import VehicleSecurityRework.Settings.*
+import VehicleSecurityRework.Base.*
 
 //Make sure that the "HackingExtensions" and "HackingExtensions.Programs" do exist
 //This means the CustomHackingSystem mod is (or is not) in your redscript folder
@@ -34,7 +35,7 @@ public class UnlockVehicleProgramAction extends HackProgramAction
 		//This count is used for knowing if a vehicle hack has been failed multiple times
 		//It's part of an "Improved" security restricting the amount of hacks possible especially on a high-end car
 		vehiclePS.m_hackAttemptsOnVehicle += 1;
-		let lockDifficulty: String = vehiclePS.GetVehicleCrackLockDifficulty();
+		let lockDifficulty: EVehicleHackLevel = vehiclePS.GetVehicleCrackLockDifficulty();
 		vehiclePS.TryToForceVehicleSecurity(lockDifficulty);
 
 		//+ an additional warning message
@@ -104,6 +105,7 @@ public class UnlockVehicleProgramAction extends HackProgramAction
 		{
 			return;
 		}
+
 		let preventionSystem: ref<PreventionSystem> = GameInstance.GetScriptableSystemsContainer(this.gameInstance).Get(n"PreventionSystem") as PreventionSystem;
 		
 		let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(vehiclePS.GetGameInstance());
@@ -111,13 +113,15 @@ public class UnlockVehicleProgramAction extends HackProgramAction
 
 		let currentHeatLevel:Int32 = Cast<Int32>(preventionSystem.GetHeatStageAsInt());
 		
+		let newHeatLevel:Int32 = currentHeatLevel + preventionDifficulty;
+
 		// Check if the requested heat level will be above the threshold of the Maximum star level defined in the Mod Settings
-		if(currentHeatLevel + preventionDifficulty > params.maximumPoliceStarLevel)
+		if (newHeatLevel > params.maximumPoliceStarLevel)
 		{
-			preventionDifficulty =  (currentHeatLevel + preventionDifficulty) - params.maximumPoliceStarLevel;
+			newHeatLevel -= params.maximumPoliceStarLevel;
 
 			// If the heat level won't update (or is lower than 0 because we are above the max star level), return
-			if (preventionDifficulty <= 0)
+			if (newHeatLevel <= 0)
 			{
 				return;
 			}
@@ -149,7 +153,7 @@ public class UnlockVehicleProgramAction extends HackProgramAction
 		if(!hasAlreadyBeenHacked)
 		{
 			let i = 0;
-			while(i < preventionDifficulty - 1)
+			while(i < newHeatLevel - 1)
 			{
 				//Raises 1 star level for each call
 	  			preventionSystem.ProcessPreventionDamageRequest(preventionSystemRequest);
@@ -169,7 +173,7 @@ public class UnlockVehicleProgramAction extends HackProgramAction
 			}
 		}
 		//By default, sending these methods too will automatically raise a star
-		vehiclePS.SendStimsOnVehicleQuickhack(true,false);
+		vehiclePS.SendStimsOnVehicleQuickhack(true, false);
       	preventionSystem.HeatPipeline("PlayerStoleVehicle");
 		PreventionSystem.SetSpawnCodeRedReinforcement(this.gameInstance,true);
 	}
