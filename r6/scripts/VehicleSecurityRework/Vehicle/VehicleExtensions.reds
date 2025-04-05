@@ -302,12 +302,10 @@ protected func GameAttached() -> Void
     //This is cosmetic, it doesn't influence available quichacks
     this.InitializeQuickHackVulnerabilities();
     ArrayClear(this.m_quickHackVulnerabilties);
-
+    
     this.AddQuickHackVulnerability(t"DeviceAction.RemoteSecurityBreach");
     this.AddQuickHackVulnerability(t"DeviceAction.ExplodeVehicle");
     this.AddQuickHackVulnerability(t"DeviceAction.MalfunctionClassHack");
-    this.AddQuickHackVulnerability(t"DeviceAction.ForceBrakes");
-    this.AddQuickHackVulnerability(t"DeviceAction.RecklessDriving");
 
     let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
     this.VehicleSecurityReworkSingleton = container.Get(n"VehicleSecurityRework.Settings.VehicleSecurityRework") as VehicleSecurityRework;
@@ -442,21 +440,6 @@ public const func CompileScannerChunks() -> Bool
                     isVulnerabilityActive = false;
                 }
             }
-
-            if (Equals(t"DeviceAction.RecklessDriving",vulnerabilityTDBID))
-            {
-                if(!vehiclePS.IsVehicleSecurityHardened() 
-                && vehiclePS.IsVehicleSecurityBreached()
-                && vehiclePS.CanTriggerRecklessDriving)
-                {
-                    isVulnerabilityActive = true;
-                }
-                else
-                {
-                    isVulnerabilityActive = false;
-                }
-            }
-
             if (vehiclePS.GetIsDestroyed() || vehiclePS.GetIsSubmerged())
             {
                 isVulnerabilityActive = false;
@@ -464,6 +447,7 @@ public const func CompileScannerChunks() -> Bool
 
             let vulnerability:Vulnerability = new Vulnerability(vulRecord.ObjectActionUI().Caption(),vulRecord.ObjectActionUI().CaptionIcon().TexturePartID().GetID(),isVulnerabilityActive);
             vulnerabilityChunk.PushBack(vulnerability);
+
         }
     }
     scannerBlackboard.SetVariant(GetAllBlackboardDefs().UI_ScannerModules.ScannerVulnerabilities, ToVariant(vulnerabilityChunk));

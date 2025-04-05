@@ -54,7 +54,7 @@ module VehicleSecurityRework.Scanner
         default:
           return;
       };
-      this.SetTab(this.m_isQuickHackAble && this.m_isQuickHackPanelOpened ? ScannerDetailTab.Hacking : ScannerDetailTab.Data, true);
+      this.RestoreLastTab();
       inkWidgetRef.SetVisible(this.m_scannerCountainer, !this.m_isQuickHackAble);
       this.m_introAnimProxy = this.PlayLibraryAnimation(n"intro");
       this.m_introAnimProxy.RegisterToCallback(inkanimEventType.OnFinish, this, n"OnScannerDetailsShown");
