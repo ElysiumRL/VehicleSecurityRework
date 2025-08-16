@@ -4,8 +4,6 @@ import HackingExtensions.*
 //You first need an ActionBool (or any ScriptableDeviceAction)
 public class QuickhackTemplateDevice extends ActionBool
 {
-    public 
-
     public final func SetProperties() -> Void
     {
         //Action name has to match the actionName you'll create in tweakDB
