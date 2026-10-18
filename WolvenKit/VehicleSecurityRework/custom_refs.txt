@@ -1,0 +1,3 @@
+user\elysium\vehiclesecurityrework\localization\en-us.json
+user\elysium\vehiclesecurityrework\textures\atlas\vehiclesecurityrework_quickhacks.inkatlas
+user\elysium\vehiclesecurityrework\textures\raw\quickhack_pop_tires.xbm

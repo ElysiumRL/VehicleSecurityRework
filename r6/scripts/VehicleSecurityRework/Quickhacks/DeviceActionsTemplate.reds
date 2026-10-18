@@ -15,7 +15,7 @@ public class QuickhackTemplateDevice extends ActionBool
 //Then add this function in your object persistent state (Replace obviously names & classes references)
 //In general you want to override this function for every persistent state that requires your quickhack
 @addMethod(VehicleComponentPS)
-private final const func ActionQuickhackTemplate() -> ref<QuickhackTemplateDevice> {
+public final func ActionQuickhackTemplate() -> ref<QuickhackTemplateDevice> {
     let action: ref<QuickhackTemplateDevice> = new QuickhackTemplateDevice();
     action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
     action.SetUp(this);

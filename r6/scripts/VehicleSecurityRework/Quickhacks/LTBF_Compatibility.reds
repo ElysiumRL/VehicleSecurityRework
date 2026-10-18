@@ -1,10 +1,26 @@
-module LetThereBeFlight.Compatibility
 
 @if(ModuleExists("HackingExtensions"))
 import HackingExtensions.*
 
 @if(ModuleExists("CustomHackingSystem.Tools"))
 import CustomHackingSystem.Tools.*
+
+public class VehicleSecurityRework_LTBF_Compatibility
+{
+    // Global method used to know if Let There Be Flight mod is present during compiling
+    // This is used in the init.lua method to bypass a call to OnQuickSlotCommandUsed (which would trigger a double quickhack call)
+    @if(ModuleExists("LetThereBeFlight"))
+    public static func IsLTBFPresent() -> Bool
+    {
+        return true;
+    }
+
+    @if(!ModuleExists("LetThereBeFlight"))
+    public static func IsLTBFPresent() -> Bool
+    {
+        return false;
+    }
+}
 
 public class LTBF_ToggleFlightON extends ActionBool
 {
@@ -17,7 +33,7 @@ public class LTBF_ToggleFlightON extends ActionBool
 
 @if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
-private final const func ActionVehicleToggleFlightON() -> ref<LTBF_ToggleFlightON> 
+public final func ActionVehicleToggleFlightON() -> ref<LTBF_ToggleFlightON> 
 {
     let action: ref<LTBF_ToggleFlightON> = new LTBF_ToggleFlightON();
     action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
@@ -36,13 +52,11 @@ private final const func ActionVehicleToggleFlightON() -> ref<LTBF_ToggleFlightO
 @addMethod(VehicleComponentPS)
 protected cb func OnActionVehicleToggleFlightON(evt:ref<LTBF_ToggleFlightON>) -> EntityNotificationType 
 {
-    this.GetOwnerEntity().UnsetPhysicsStates();
+    this.GetOwnerEntity().ForceEnablePhysics();
     this.GetOwnerEntity().EndActions();
-    this.GetOwnerEntity().m_flightComponent.Activate(true);
+    this.GetOwnerEntity().ToggleFlightComponent(true);
     return EntityNotificationType.DoNotNotifyEntity;
 }
-
-
 
 public class LTBF_ToggleGravityON extends ActionBool
 {
@@ -55,7 +69,7 @@ public class LTBF_ToggleGravityON extends ActionBool
 
 @if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
-private final const func ActionVehicleToggleGravityON() -> ref<LTBF_ToggleGravityON> 
+public final func ActionVehicleToggleGravityON() -> ref<LTBF_ToggleGravityON> 
 {
     let action: ref<LTBF_ToggleGravityON> = new LTBF_ToggleGravityON();
     action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
@@ -80,8 +94,6 @@ protected cb func OnVehicleToggleGravityON(evt:ref<LTBF_ToggleGravityON>) -> Ent
     return EntityNotificationType.DoNotNotifyEntity;
 }
 
-
-
 public class LTBF_ToggleFlightOFF extends ActionBool
 {
     public final func SetProperties() -> Void
@@ -93,7 +105,7 @@ public class LTBF_ToggleFlightOFF extends ActionBool
 
 @if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
-private final const func ActionVehicleToggleFlightOFF() -> ref<LTBF_ToggleFlightOFF> 
+public final func ActionVehicleToggleFlightOFF() -> ref<LTBF_ToggleFlightOFF> 
 {
     let action: ref<LTBF_ToggleFlightOFF> = new LTBF_ToggleFlightOFF();
     action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
@@ -112,9 +124,9 @@ private final const func ActionVehicleToggleFlightOFF() -> ref<LTBF_ToggleFlight
 @addMethod(VehicleComponentPS)
 protected cb func OnActionVehicleToggleFlightOFF(evt:ref<LTBF_ToggleFlightOFF>) -> EntityNotificationType 
 {
-    this.GetOwnerEntity().UnsetPhysicsStates();
+    this.GetOwnerEntity().ForceEnablePhysics();
     this.GetOwnerEntity().EndActions();
-    this.GetOwnerEntity().m_flightComponent.Deactivate(true);
+    this.GetOwnerEntity().ToggleFlightComponent(false);
     return EntityNotificationType.DoNotNotifyEntity;
 }
 
@@ -131,7 +143,7 @@ public class LTBF_ToggleGravityOFF extends ActionBool
 
 @if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
-private final const func ActionVehicleToggleGravityOFF() -> ref<LTBF_ToggleGravityOFF> 
+public final func ActionVehicleToggleGravityOFF() -> ref<LTBF_ToggleGravityOFF> 
 {
     let action: ref<LTBF_ToggleGravityOFF> = new LTBF_ToggleGravityOFF();
     action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
@@ -150,34 +162,31 @@ private final const func ActionVehicleToggleGravityOFF() -> ref<LTBF_ToggleGravi
 @addMethod(VehicleComponentPS)
 protected cb func OnActionVehicleToggleGravityOFF(evt:ref<LTBF_ToggleGravityOFF>) -> EntityNotificationType 
 {
-    this.GetOwnerEntity().UnsetPhysicsStates();
+    this.GetOwnerEntity().ForceEnablePhysics();
     this.GetOwnerEntity().EndActions();
     this.GetOwnerEntity().EnableGravity(false);
     return EntityNotificationType.DoNotNotifyEntity;
 }
 
-
-
-
-public class LTBF_Liftoff extends ActionBool
+public class LTBF_FlightMalfunction extends ActionBool
 {
     public final func SetProperties() -> Void
     {
-        this.actionName = n"Liftoff";
+        this.actionName = n"LTBF_FlightMalfunction";
         this.prop = DeviceActionPropertyFunctions.SetUpProperty_Bool(this.actionName, true, this.actionName, this.actionName);
     }
 }
 
 @if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
-private final const func ActionVehicleLiftoff() -> ref<LTBF_Liftoff> 
+public final func ActionVehicleFlightMalfunction() -> ref<LTBF_FlightMalfunction>
 {
-    let action: ref<LTBF_Liftoff> = new LTBF_Liftoff();
+    let action: ref<LTBF_FlightMalfunction> = new LTBF_FlightMalfunction();
     action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
     action.SetUp(this);
     action.SetProperties();
     action.AddDeviceName(this.m_deviceName);
-    action.SetObjectActionID(t"DeviceAction.Liftoff");
+    action.SetObjectActionID(t"DeviceAction.LTBF_FlightMalfunction");
     let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
     let customHackSystem: ref<CustomHackingSystem> = container.Get(n"HackingExtensions.CustomHackingSystem") as CustomHackingSystem;
     customHackSystem.RegisterDeviceAction(action);
@@ -187,13 +196,60 @@ private final const func ActionVehicleLiftoff() -> ref<LTBF_Liftoff>
 
 @if(ModuleExists("LetThereBeFlight"))
 @addMethod(VehicleComponentPS)
-protected cb func OnActionVehicleLiftoff(evt:ref<LTBF_Liftoff>) -> EntityNotificationType 
+protected cb func OnActionVehicleFlightMalfunction(evt:ref<LTBF_FlightMalfunction>) -> EntityNotificationType 
 {
-    this.GetOwnerEntity().UnsetPhysicsStates();
-    this.GetOwnerEntity().EndActions();
-    this.GetOwnerEntity().EnableGravity(false);
-    this.GetOwnerEntity().m_flightComponent.Activate(true);
-    this.GetOwnerEntity().m_flightComponent.lift = 5.0;
+    if IsDefined(this.GetOwnerEntity()) && this.GetOwnerEntity().CanEnterFlight()
+    {
+        this.GetOwnerEntity().ForceEnablePhysics();
+        this.GetOwnerEntity().EndActions();
+        this.GetOwnerEntity().ToggleFlightComponent(true);
+        this.GetOwnerEntity().GetFlightComponent().lift = 5.0;
+    }
+
+    return EntityNotificationType.DoNotNotifyEntity;
+}
+
+
+public class LTBF_Funhouse extends ActionBool
+{
+    public final func SetProperties() -> Void
+    {
+        this.actionName = n"LTBF_Funhouse";
+        this.prop = DeviceActionPropertyFunctions.SetUpProperty_Bool(this.actionName, true, this.actionName, this.actionName);
+    }
+}
+
+@if(ModuleExists("LetThereBeFlight"))
+@addMethod(VehicleComponentPS)
+public final func ActionVehicleFunhouse() -> ref<LTBF_Funhouse>
+{
+    let action: ref<LTBF_Funhouse> = new LTBF_Funhouse();
+    action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
+    action.SetUp(this);
+    action.SetProperties();
+    action.AddDeviceName(this.m_deviceName);
+    action.SetObjectActionID(t"DeviceAction.LTBF_Funhouse");
+    let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
+    let customHackSystem: ref<CustomHackingSystem> = container.Get(n"HackingExtensions.CustomHackingSystem") as CustomHackingSystem;
+    customHackSystem.RegisterDeviceAction(action);
+    action.CreateInteraction();    
+    return action;
+}
+
+@if(ModuleExists("LetThereBeFlight"))
+@addMethod(VehicleComponentPS)
+protected cb func OnActionVehicleFunhouse(evt:ref<LTBF_Funhouse>) -> EntityNotificationType 
+{
+    if IsDefined(this.GetOwnerEntity()) && this.GetOwnerEntity().CanEnterFlight()
+    {
+        this.GetOwnerEntity().bouncy = true;
+        this.GetOwnerEntity().ignoreImpulses = false;
+        this.GetOwnerEntity().ForceEnablePhysics();
+        this.GetOwnerEntity().EndActions();
+        this.GetOwnerEntity().GetFlightComponent().FireVerticalImpulse(0);
+
+        LogChannel(n"DEBUG", "called ?");
+    }
 
     return EntityNotificationType.DoNotNotifyEntity;
 }

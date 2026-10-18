@@ -44,7 +44,7 @@ public class RepairVehicleTiresDeviceAction extends ActionBool
 }
 
 @addMethod(VehicleComponentPS)
-private final const func ActionUnlockSecurity(minigameDef:TweakDBID) -> ref<UnlockSecurityDeviceAction> 
+public final func ActionUnlockSecurity(minigameDef:TweakDBID) -> ref<UnlockSecurityDeviceAction> 
 {
 
     let action: ref<UnlockSecurityDeviceAction> = new UnlockSecurityDeviceAction();
@@ -63,7 +63,7 @@ private final const func ActionUnlockSecurity(minigameDef:TweakDBID) -> ref<Unlo
 }
 
 @addMethod(VehicleComponentPS)
-private final const func ActionVehicleDistraction() -> ref<VehicleDistractionDeviceAction> 
+public final func ActionVehicleDistraction() -> ref<VehicleDistractionDeviceAction> 
 {
     let action: ref<VehicleDistractionDeviceAction> = new VehicleDistractionDeviceAction();
     action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
@@ -83,7 +83,7 @@ private final const func ActionVehicleDistraction() -> ref<VehicleDistractionDev
 }
 
 @addMethod(VehicleComponentPS)
-private final const func ActionVehicleAutoHack() -> ref<AutoHackVehicleDeviceAction> 
+public final func ActionVehicleAutoHack() -> ref<AutoHackVehicleDeviceAction> 
 {
     let action: ref<AutoHackVehicleDeviceAction> = new AutoHackVehicleDeviceAction();
     action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
@@ -102,7 +102,7 @@ private final const func ActionVehicleAutoHack() -> ref<AutoHackVehicleDeviceAct
 }
 
 @addMethod(VehicleComponentPS)
-private final const func ActionVehiclePopTire() -> ref<PopTireVehicleDeviceAction> 
+public final func ActionVehiclePopTire() -> ref<PopTireVehicleDeviceAction> 
 {
     let action: ref<PopTireVehicleDeviceAction> = new PopTireVehicleDeviceAction();
     action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
@@ -120,7 +120,7 @@ private final const func ActionVehiclePopTire() -> ref<PopTireVehicleDeviceActio
 }
 
 @addMethod(VehicleComponentPS)
-private final const func ActionVehicleRepairTires() -> ref<RepairVehicleTiresDeviceAction> 
+public final func ActionVehicleRepairTires() -> ref<RepairVehicleTiresDeviceAction> 
 {
     let action: ref<RepairVehicleTiresDeviceAction> = new RepairVehicleTiresDeviceAction();
     action.clearanceLevel = DefaultActionsParametersHolder.GetInteractiveClearance();
@@ -227,7 +227,7 @@ protected cb func OnVehicleRepairTires(evt:ref<RepairVehicleTiresDeviceAction>) 
 }
 
 @addMethod(VehicleComponentPS)
-protected cb func OnActionVehicleDistraction(evt:ref<VehicleDistractionDeviceAction>) -> EntityNotificationType 
+public cb func OnActionVehicleDistraction(evt:ref<VehicleDistractionDeviceAction>) -> EntityNotificationType 
 {
     if (!this.m_distractExecuted)
     {
@@ -256,7 +256,7 @@ protected cb func OnActionVehicleDistraction(evt:ref<VehicleDistractionDeviceAct
 }
 
 @addMethod(VehicleObject)
-protected final func Distract() -> Void 
+public final func Distract() -> Void 
 {
     let broadcaster: ref<StimBroadcasterComponent>;
     broadcaster = this.GetStimBroadcasterComponent();

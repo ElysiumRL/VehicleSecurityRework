@@ -9,7 +9,7 @@ function VehicleSecurityRework:new()
 		local CustomHackingSystem = GetMod("CustomHackingSystem")
 
 		if CustomHackingSystem == nil then
-			print("[VehicleSecurityRework] Custom Hacking System Mod not found")
+			print("[VehicleSecurityRework] Custom Hacking System Mod not found, make sure it is properly installed (quickhacks won't be available)")
 		end
 
 		local hacks = require("Modules/Hack.lua")
@@ -20,7 +20,14 @@ function VehicleSecurityRework:new()
 
 		quickhacks.Generate()
 
-		--print("[VehicleSecurityRework] Quickhacks TDBIDs Generated")
+		if VehicleSecurityRework_LTBF_Compatibility.IsLTBFPresent() then
+			-- Fix for LTBF's added methods which would trigger a double callback for quickhacks
+			-- i'll just take then added LTBF method (in redscript, there's no way to replace an added redscript method in redscript),
+			-- and replace it by nothing inside (to avoid the ExecuteAction/ProcessRPGAction call)
+			Override('VehicleObject', 'OnQuickSlotCommandUsed', function(_, evt)
+			end)
+
+		end
 	end)
 
 end

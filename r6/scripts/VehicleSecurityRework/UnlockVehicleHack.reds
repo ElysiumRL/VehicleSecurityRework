@@ -18,13 +18,13 @@ import HackingExtensions.Programs.*
 public class UnlockVehicleProgramAction extends HackProgramAction
 {
 	//This function is called by the Custom Hacking system when you finish the hack
-	protected func ExecuteProgramSuccess() -> Void
+	public func ExecuteProgramSuccess() -> Void
 	{
 		this.OpenVehicle();
 	}
 
 	//This function is called by the Custom Hacking system when you fail to get the hack
-	protected func ExecuteProgramFailure() -> Void
+	public func ExecuteProgramFailure() -> Void
 	{	
 		//Retrieve the vehicle PS (we are going to need it a lot)
 		let vehiclePS:ref<VehicleComponentPS> = this.hackInstanceSettings.hackedTarget as VehicleComponentPS;

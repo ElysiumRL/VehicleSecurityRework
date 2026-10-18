@@ -33,11 +33,11 @@ public enum EVehicleHackLevel
 //Class used for keybind events
 public class GlobalInputListener
 {
-    let gameInstance: GameInstance;
+    public let gameInstance: GameInstance;
 
-    let customHackSystem:ref<CustomHackingSystem>;
+    public let customHackSystem:ref<CustomHackingSystem>;
 
-    let vehiclePS:ref<VehicleComponentPS>;
+    public let vehiclePS:ref<VehicleComponentPS>;
         
     protected cb func OnAction(action: ListenerAction, consumer: ListenerActionConsumer) -> Bool 
     {
@@ -70,8 +70,9 @@ public class GlobalInputListener
 //Class handling the visual interaction you see when approaching the car
 public class InteractionUpdate
 {
-    let gameInstance: GameInstance;
-    let vehiclePS:ref<VehicleComponentPS>;
+    public let gameInstance: GameInstance;
+    
+    public let vehiclePS:ref<VehicleComponentPS>;
     
     //Function called every tick
     public func Update() -> Void

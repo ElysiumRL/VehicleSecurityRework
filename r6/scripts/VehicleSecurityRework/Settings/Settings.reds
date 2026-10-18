@@ -198,12 +198,18 @@ public class VehicleSecurityRework extends ScriptableSystem
 
     @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
     @runtimeProperty("ModSettings.category","Quickhacks - Let There Be Flight")
-    @runtimeProperty("ModSettings.displayName","Liftoff!")
+    @runtimeProperty("ModSettings.displayName","Flight Malfunction")
     @runtimeProperty("ModSettings.description","Click to toggle this Quickhack (Requires Let There Be Flight mod)")
     public let liftoffHack:Bool = true;
 
+    @runtimeProperty("ModSettings.mod","Vehicle Security Rework")
+    @runtimeProperty("ModSettings.category","Quickhacks - Let There Be Flight")
+    @runtimeProperty("ModSettings.displayName","Funhouse")
+    @runtimeProperty("ModSettings.description","Click to toggle this Quickhack (Requires Let There Be Flight mod)")
+    public let funhouseHack:Bool = true;
+
     //Called by the game when the scriptable system is created
-    private func OnAttach() -> Void
+    public func OnAttach() -> Void
     {
         this.vehicleAffiliations = new StringIScriptableDictionary();
         this.BuildAllVehicleAffiliations();
@@ -218,14 +224,14 @@ public class VehicleSecurityRework extends ScriptableSystem
     }
 
     //Called by the game when the scriptable system is removed
-    private func OnDetach() -> Void
+    public func OnDetach() -> Void
     {
         //LogChannel(n"DEBUG","[VehicleSecurityRework] Scriptable System Detached");
         this.vehicleAffiliations.Clear();
     }
 
     // Builds the affiliation list based on the vehicle's Appearance Name
-    private func BuildAllVehicleAffiliations() -> Void
+    public func BuildAllVehicleAffiliations() -> Void
     {
         this.vehicleAffiliations.Insert("tyger",VehicleAffiliationTuple.Build(t"Factions.TygerClaws","Factions.TygerClaws"));
         this.vehicleAffiliations.Insert("animals",VehicleAffiliationTuple.Build(t"Factions.Animals","Factions.Animals"));

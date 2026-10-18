@@ -21,7 +21,7 @@ public class VehicleAffiliationTuple extends IScriptable
     public let affiliationTweakDBID : TweakDBID;
     public let affiliationString: String;
 
-    public static func Build(tweakDBID : TweakDBID,string : String) -> ref<VehicleAffiliationTuple>
+    public static func Build(tweakDBID : TweakDBID, string : String) -> ref<VehicleAffiliationTuple>
     {
         let instance: ref<VehicleAffiliationTuple> = new VehicleAffiliationTuple();
         instance.affiliationTweakDBID = tweakDBID;
@@ -116,16 +116,16 @@ public func CanHackTargetedVehicle(gameInstance:GameInstance,out ps:ref<VehicleC
 }
 
 @addField(VehicleComponentPS)
-protected persistent let m_puncturedTires: array<Uint32>;
+public persistent let m_puncturedTires: array<Uint32>;
 
 @addField(VehicleComponentPS)
-protected persistent let isSecurityHardened: Bool = false;
+public persistent let isSecurityHardened: Bool = false;
 
 @addField(VehicleComponentPS)
-protected persistent let m_isVehicleHacked: Bool = false;
+public persistent let m_isVehicleHacked: Bool = false;
 
 @addField(VehicleComponentPS)
-protected persistent let m_hackAttemptsOnVehicle: Int32 = 0;
+public persistent let m_hackAttemptsOnVehicle: Int32 = 0;
 
 @addField(VehicleComponentPS)
 public let quickhackForceBrakesExecuted:Bool = false;
@@ -310,11 +310,11 @@ protected func GameAttached() -> Void
     let container: ref<ScriptableSystemsContainer> = GameInstance.GetScriptableSystemsContainer(this.GetGameInstance());
     this.VehicleSecurityReworkSingleton = container.Get(n"VehicleSecurityRework.Settings.VehicleSecurityRework") as VehicleSecurityRework;
 
-    if(this.VehicleSecurityReworkSingleton.canVehicleBeAutoUnlockedByDefault)
+    if (this.VehicleSecurityReworkSingleton.canVehicleBeAutoUnlockedByDefault)
     {
         let vehicleHackLevel:EVehicleHackLevel = this.GetVehicleCrackLockDifficulty();
 
-        if( NotEquals(vehicleHackLevel,EVehicleHackLevel.None) &&
+        if (NotEquals(vehicleHackLevel,EVehicleHackLevel.None) &&
             EnumInt(vehicleHackLevel) <= EnumInt(this.VehicleSecurityReworkSingleton.availableHackLevels))
         {
             let unlockProbabilityRoll:Float = RandF();
@@ -445,7 +445,7 @@ public const func CompileScannerChunks() -> Bool
                 isVulnerabilityActive = false;
             }
 
-            let vulnerability:Vulnerability = new Vulnerability(vulRecord.ObjectActionUI().Caption(),vulRecord.ObjectActionUI().CaptionIcon().TexturePartID().GetID(),isVulnerabilityActive);
+            let vulnerability:Vulnerability = Vulnerability(vulRecord.ObjectActionUI().Caption(),vulRecord.ObjectActionUI().CaptionIcon().TexturePartID().GetID(),isVulnerabilityActive);
             vulnerabilityChunk.PushBack(vulnerability);
 
         }
@@ -878,7 +878,7 @@ public const func GetCurrentOutline() -> EFocusOutlineType
 }
 
 @addMethod(WheeledObject)
-public const func GetWheelCount() -> Uint32
+public func GetWheelCount() -> Uint32
 {
     let wheelSetup : ref<VehicleWheelDrivingSetup_Record> = TweakDBInterface.GetVehicleRecord(this.GetRecordID()).VehDriveModelData().WheelSetup();
     

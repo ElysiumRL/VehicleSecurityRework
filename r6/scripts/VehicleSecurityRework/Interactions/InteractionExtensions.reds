@@ -38,7 +38,7 @@ private func GenerateVisualizersInfo(choiceHubData: InteractionChoiceHubData) ->
 }
 
 //Adds interaction to the UI
-public static func AddInteraction(gameInstance:GameInstance,title:String,action:CName, opt holdButton: Bool) -> Bool
+public func AddInteraction(gameInstance:GameInstance,title:String,action:CName, opt holdButton: Bool) -> Bool
 {
 	let blackboardDefinitions = GetAllBlackboardDefs();
 	let interactionBlackBoard = GameInstance.GetBlackboardSystem(gameInstance).Get(blackboardDefinitions.UIInteractions);
@@ -69,7 +69,7 @@ public static func AddInteraction(gameInstance:GameInstance,title:String,action:
 
 //Adds interaction to the UI
 
-public static func AddLockedInteraction(gameInstance:GameInstance,title:String,action:CName, opt holdButton: Bool) -> Bool
+public func AddLockedInteraction(gameInstance:GameInstance,title:String,action:CName, opt holdButton: Bool) -> Bool
 {
 	let blackboardDefinitions = GetAllBlackboardDefs();
 	let interactionBlackBoard = GameInstance.GetBlackboardSystem(gameInstance).Get(blackboardDefinitions.UIInteractions);
@@ -99,7 +99,7 @@ public static func AddLockedInteraction(gameInstance:GameInstance,title:String,a
 }
 
 //Removes Interaction from UI (only if interaction exists)
-public static func RemoveInteraction(gameInstance:GameInstance,title:String,action:CName,opt holdButton:Bool) -> Bool
+public func RemoveInteraction(gameInstance:GameInstance,title:String,action:CName,opt holdButton:Bool) -> Bool
 {
 	let blackboardDefinitions = GetAllBlackboardDefs();
 	let interactionBlackBoard = GameInstance.GetBlackboardSystem(gameInstance).Get(blackboardDefinitions.UIInteractions);

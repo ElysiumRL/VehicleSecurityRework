@@ -1,6 +1,6 @@
 module TargetingExtensions
 
-public static func LookAtGameObject(gameInstance: GameInstance,opt useLineOfSight:Bool,opt ignoreTransparency:Bool) -> ref<GameObject>
+public func LookAtGameObject(gameInstance: GameInstance,opt useLineOfSight:Bool,opt ignoreTransparency:Bool) -> ref<GameObject>
 {
     let player = GetPlayer(gameInstance);
     let targetingSystem: ref<TargetingSystem> = GameInstance.GetTargetingSystem(gameInstance);
@@ -8,7 +8,7 @@ public static func LookAtGameObject(gameInstance: GameInstance,opt useLineOfSigh
     return targetObject;
 }
 
-public static func LookAtGameObject(gameInstance: GameInstance, maxDistance: Float,opt useLineOfSight:Bool,opt ignoreTransparency:Bool) -> ref<GameObject> 
+public func LookAtGameObject(gameInstance: GameInstance, maxDistance: Float,opt useLineOfSight:Bool,opt ignoreTransparency:Bool) -> ref<GameObject> 
 {
     let player = GetPlayer(gameInstance);
     let targetObject: ref<GameObject> = LookAtGameObject(gameInstance,useLineOfSight,ignoreTransparency);
