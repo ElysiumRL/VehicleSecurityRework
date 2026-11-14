@@ -292,6 +292,33 @@ public final func SetHasStateBeenModifiedByQuest(set: Bool) -> Void
     wrappedMethod(set);
 }
 
+@addMethod(VehicleComponentPS)
+public func ShouldVehicleBeUnlockedByDefault(InTweakDBID: TweakDBID) -> Bool
+{
+    let autoUnlockedVehicles : array<TweakDBID> =
+    [
+        // Sometimes, we want custom vehicles from other mods (or vehicles that possibly aren't flagged correctly as quests) to be automatically unlocked
+        // an example for this is with the mod "Combat Cab Taxi System", which calls a taxi for you
+        // under normal circumstances, the taxi would need to be unlocked through the hacking minigame, but it's kinda bad, as we want to instant jump in the taxi when it arrives
+        // especially since "we" called the vehicle, so it should be auto unlocked
+
+        // Other vehicles can be added in this array, it's not necessarily the most performance friendly thing to do, but it'll be fine (it shouldn't be *that* much of a bottleneck tbh)
+        t"Vehicle.CCTS__combat_cab_request_thrax",
+        t"Vehicle.CCTS__combat_cab_request_hella",
+        t"Vehicle.CCTS__combat_cab_elite_hella",
+        t"Vehicle.CCTS__combat_cab_elite_hella_black",
+        t"Vehicle.CCTS__combat_cab_elite_thrax",
+        t"Vehicle.CCTS__combat_cab_elite_thrax_v2",
+        t"Vehicle.CCTS__archer_hella_combat_cab_ganger",
+        t"Vehicle.CCTS__chevalier_thrax_combat_cab_ganger",
+        t"Vehicle.CCTS__archer_hella_combat_cab_civilian",
+        t"Vehicle.CCTS__chevalier_thrax_combat_cab_civilian"
+    ];
+
+    return ArrayContains(autoUnlockedVehicles, InTweakDBID);
+}
+
+
 //Called when the vehicle is spawned in the world
 @wrapMethod(VehicleComponentPS)
 protected func GameAttached() -> Void 
@@ -350,18 +377,20 @@ protected func GameAttached() -> Void
         }
     }
 
-    //Ignore the hack part if it's not needed (or already hacked previously)
+    let record: TweakDBID = this.GetOwnerEntity().GetRecord().GetID();
+
+    // Ignore the hack part if it's not needed (or already hacked previously)
     if 
     (
         this.GetIsPlayerVehicle() 
         || this.IsMarkedAsQuest() 
         || this.m_isVehicleHacked
+        || this.ShouldVehicleBeUnlockedByDefault(record)
         || this.VehicleSecurityReworkSingleton.forceSecurityUnlock)
     {
         this.UnlockHackedVehicle();
     }
 }
-
 
 @wrapMethod(VehicleObject)
 protected cb func OnGameAttached() -> Bool 
