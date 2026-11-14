@@ -877,11 +877,34 @@ public const func GetCurrentOutline() -> EFocusOutlineType
 	return outlineType;
 }
 
+// Immersive Road Crossing and Crashes (aka "Roadkill") mod also overrides the wheel count
+// the setup on the other end is similar enough that this method shouldn't need to be overriden in lua
+@if(!ModuleExists("RoadSafety.System"))
 @addMethod(WheeledObject)
 public func GetWheelCount() -> Uint32
-{
-    let wheelSetup : ref<VehicleWheelDrivingSetup_Record> = TweakDBInterface.GetVehicleRecord(this.GetRecordID()).VehDriveModelData().WheelSetup();
+{   
+    // also, apparently (by looking at roadkill mod for compatibility), some mods may not have a proper TweakDB record setup for some reason
+    // so instead of directly accessing the record of the wheel setup, i'll make sure that the vehicle possesses all required records before checking the wheel setup (which wasn't done previously)
+    let vehicleRecord: ref<Vehicle_Record> = TweakDBInterface.GetVehicleRecord(this.GetRecordID());
     
+    if (!IsDefined(vehicleRecord))
+    {
+        return 0u;
+    }
+    let driveModelData: wref<VehicleDriveModelData_Record> = vehicleRecord.VehDriveModelData();
+    
+    if (!IsDefined(driveModelData))
+    {
+        return 0u;
+    }
+
+    let wheelSetup: wref<VehicleWheelDrivingSetup_Record> = driveModelData.WheelSetup();
+
+    if (!IsDefined(wheelSetup))
+    {
+        return 0u;
+    }
+
     if(wheelSetup.IsExactlyA(n"gamedataVehicleWheelDrivingSetup_2_Record"))
     {
         return 2u;
