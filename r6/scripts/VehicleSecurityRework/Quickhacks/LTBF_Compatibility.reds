@@ -9,16 +9,17 @@ public class VehicleSecurityRework_LTBF_Compatibility
 {
     // Global method used to know if Let There Be Flight mod is present during compiling
     // This is used in the init.lua method to bypass a call to OnQuickSlotCommandUsed (which would trigger a double quickhack call)
-    @if(ModuleExists("LetThereBeFlight"))
-    public static func IsLTBFPresent() -> Bool
-    {
-        return true;
-    }
 
     @if(!ModuleExists("LetThereBeFlight"))
     public static func IsLTBFPresent() -> Bool
     {
         return false;
+    }
+
+    @if(ModuleExists("LetThereBeFlight"))
+    public static func IsLTBFPresent() -> Bool
+    {
+        return true;
     }
 }
 

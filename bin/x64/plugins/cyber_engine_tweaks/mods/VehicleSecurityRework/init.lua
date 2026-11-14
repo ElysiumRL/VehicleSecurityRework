@@ -20,7 +20,7 @@ function VehicleSecurityRework:new()
 
 		quickhacks.Generate()
 
-		if VehicleSecurityRework_LTBF_Compatibility.IsLTBFPresent() then
+		if VehicleSecurityRework_LTBF_Compatibility.IsLTBFPresent() == true then
 			-- Fix for LTBF's added methods which would trigger a double callback for quickhacks
 			-- i'll just take then added LTBF method (in redscript, there's no way to replace an added redscript method in redscript),
 			-- and replace it by nothing inside (to avoid the ExecuteAction/ProcessRPGAction call)
